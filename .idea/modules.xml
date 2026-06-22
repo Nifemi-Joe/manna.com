@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$USER_HOME$/WebstormProject/manna-api/.idea/manna-api.iml" filepath="$USER_HOME$/WebstormProject/manna-api/.idea/manna-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/manna.com.iml" filepath="$PROJECT_DIR$/.idea/manna.com.iml" />
+    </modules>
+  </component>
+</project>

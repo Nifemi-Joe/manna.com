@@ -1,0 +1,240 @@
+@import "tailwindcss";
+
+/* ─── Brand Tokens ─────────────────────────────────────── */
+:root {
+    --accent:       #1765D8;
+    --accent-hover: #1255B8;
+    --accent-2:     #0F9C7C;
+    --accent-2-hover: #0B8068;
+    --text:         #101828;
+    --muted:        #475467;
+    --surface:      #FFFFFF;
+    --surface-soft: #F7F9FC;
+    --line:         #D0D9E4;
+    --line-strong:  #B8C4D4;
+    --success:      #087443;
+    --success-bg:   #ECFDF3;
+    --warning:      #8A4F00;
+    --warning-bg:   #FFFAEB;
+    --danger:       #A12525;
+    --danger-bg:    #FEF3F2;
+    --brand-green:  #1A7A4A;
+
+    /* Radius scale */
+    --radius-sm:  6px;
+    --radius-md:  10px;
+    --radius-lg:  16px;
+    --radius-xl:  20px;
+
+    /* Shadow scale */
+    --shadow-xs: 0 1px 2px 0 rgb(16 24 40 / 0.05);
+    --shadow-sm: 0 1px 3px 0 rgb(16 24 40 / 0.10), 0 1px 2px -1px rgb(16 24 40 / 0.06);
+    --shadow-md: 0 4px 6px -1px rgb(16 24 40 / 0.08), 0 2px 4px -2px rgb(16 24 40 / 0.04);
+    --shadow-lg: 0 10px 15px -3px rgb(16 24 40 / 0.06), 0 4px 6px -4px rgb(16 24 40 / 0.04);
+    --shadow-xl: 0 20px 25px -5px rgb(16 24 40 / 0.08), 0 8px 10px -6px rgb(16 24 40 / 0.04);
+}
+
+/* ─── Tailwind v4 Theme Extension ──────────────────────── */
+@theme inline {
+    /* Colors */
+    --color-accent:       var(--accent);
+    --color-accent-2:     var(--accent-2);
+    --color-brand-green:  var(--brand-green);
+    --color-text-base:    var(--text);
+    --color-muted:        var(--muted);
+    --color-surface:      var(--surface);
+    --color-surface-soft: var(--surface-soft);
+    --color-line:         var(--line);
+    --color-line-strong:  var(--line-strong);
+    --color-success:      var(--success);
+    --color-warning:      var(--warning);
+    --color-danger:       var(--danger);
+
+    /* Fonts */
+    --font-display: var(--font-fraunces), Georgia, serif;
+    --font-sans:    var(--font-manrope), system-ui, sans-serif;
+}
+
+/* ─── Base Reset ───────────────────────────────────────── */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+body {
+    background-color: var(--surface-soft);
+    color: var(--text);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+}
+
+/* ─── Typography Utility Classes ──────────────────────── */
+@layer utilities {
+    .text-display-xl {
+        font-family: var(--font-display);
+        font-size: 56px;
+        line-height: 58px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+    .text-display-l {
+        font-family: var(--font-display);
+        font-size: 44px;
+        line-height: 48px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+    .text-heading-m {
+        font-family: var(--font-display);
+        font-size: 32px;
+        line-height: 36px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+    }
+
+    .text-heading-s {
+        font-family: var(--font-display);
+        font-size: 24px;
+        line-height: 28px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+    }
+
+    .text-body-l {
+        font-family: var(--font-sans);
+        font-size: 18px;
+        line-height: 28px;
+        font-weight: 400;
+    }
+
+    .text-body-m {
+        font-family: var(--font-sans);
+        font-size: 16px;
+        line-height: 24px;
+        font-weight: 400;
+    }
+
+    .text-body-s {
+        font-family: var(--font-sans);
+        font-size: 14px;
+        line-height: 22px;
+        font-weight: 400;
+    }
+
+    .text-label-xs {
+        font-family: var(--font-sans);
+        font-size: 11px;
+        line-height: 16px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+}
+
+/* ─── Focus Ring ───────────────────────────────────────── */
+@layer base {
+    :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        border-radius: var(--radius-sm);
+    }
+}
+
+/* ─── Scrollbar ────────────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--line-strong);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--muted);
+}
+
+/* ─── Floating Label Input ─────────────────────────────── */
+.input-floating-wrap {
+    position: relative;
+}
+
+.input-floating {
+    width: 100%;
+    padding: 20px 14px 8px;
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--text);
+    transition: border-color 160ms ease-out, box-shadow 160ms ease-out;
+}
+
+.input-floating:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgb(23 101 216 / 0.12);
+    outline: none;
+}
+
+.input-floating.error {
+    border-color: var(--danger);
+}
+
+.input-floating.error:focus {
+    box-shadow: 0 0 0 3px rgb(161 37 37 / 0.12);
+}
+
+.input-floating-label {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--muted);
+    pointer-events: none;
+    transition: top 160ms ease-out, font-size 160ms ease-out, color 160ms ease-out;
+    transform-origin: left center;
+}
+
+.input-floating:focus ~ .input-floating-label,
+.input-floating:not(:placeholder-shown) ~ .input-floating-label {
+    top: 10px;
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 600;
+    color: var(--accent);
+    transform: none;
+}
+
+.input-floating.error:focus ~ .input-floating-label,
+.input-floating.error:not(:placeholder-shown) ~ .input-floating-label {
+    color: var(--danger);
+}
+
+/* ─── Print Styles ─────────────────────────────────────── */
+@media print {
+    .no-print { display: none !important; }
+    body { background: white; color: black; }
+}
+
+/* ─── Reduced Motion ───────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
