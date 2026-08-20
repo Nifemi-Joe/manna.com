@@ -47,12 +47,15 @@ export default function UsersPage() {
     const [suspendId, setSuspendId] = useState<string | null>(null);
 
     useEffect(() => {
-        setTimeout(() => { setUsers(MOCK); setLoading(false); }, 500);
+        setTimeout(() => {
+            setUsers(MOCK);
+            setLoading(false);
+        }, 500);
     }, []);
 
     const filtered = users.filter((u) => {
-        const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) ||
-            u.email.toLowerCase().includes(search.toLowerCase());
+        const matchSearch =
+            u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
         const matchPortal = portalFilter === 'all' || u.portal === portalFilter;
         return matchSearch && matchPortal;
     });
@@ -60,10 +63,7 @@ export default function UsersPage() {
     function handleSuspend() {
         if (!suspendId) return;
         setUsers((prev) =>
-            prev.map((u) => u.id === suspendId
-                ? { ...u, status: u.status === 'active' ? 'suspended' : 'active' }
-                : u
-            )
+            prev.map((u) => (u.id === suspendId ? { ...u, status: u.status === 'active' ? 'suspended' : 'active' } : u))
         );
         toast.success('User status updated');
         setSuspendId(null);
@@ -71,39 +71,46 @@ export default function UsersPage() {
 
     const targetUser = users.find((u) => u.id === suspendId);
 
-    if (loading) return <div className="p-6"><SkeletonTable rows={5} /></div>;
+    if (loading)
+        return (
+            <div className="p-6 md:p-8">
+                <SkeletonTable rows={5} />
+            </div>
+        );
 
     return (
         <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-            className="p-6 space-y-5"
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="p-6 md:p-8 space-y-5 max-w-6xl"
         >
             <div>
-                <h1 className="text-heading-s text-[var(--text)]">Users</h1>
-                <p className="text-body-s text-[var(--muted)] mt-1">{users.length} users across all portals</p>
+                <h1 className="text-heading-m text-[var(--text)]">Users</h1>
+                <p className="text-body-s text-[var(--muted)] mt-1">
+                    <span className="font-mono-num">{users.length}</span> users across all portals
+                </p>
             </div>
 
-            <div className="flex gap-3 flex-wrap">
-                <div className="relative max-w-xs flex-1">
+            <div className="flex gap-3 flex-wrap items-center">
+                <div className="relative max-w-xs flex-1 min-w-[200px]">
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search users…"
-                        className="w-full pl-8 pr-3 py-2 rounded-lg border border-[var(--line)] bg-[var(--surface)] text-body-s focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                        className="w-full h-10 pl-9 pr-3 rounded-[var(--radius-md)] border border-[var(--line)] bg-[var(--surface)] text-body-s focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-2)]"
                     />
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-1 bg-[var(--surface-soft)] p-1 rounded-[var(--radius-md)] border border-[var(--line)]">
                     {(['all', 'employee', 'hr', 'ops', 'admin'] as const).map((p) => (
                         <button
                             key={p}
                             onClick={() => setPortalFilter(p)}
-                            className={`px-3 py-1.5 rounded-lg text-body-s font-medium capitalize transition-colors ${
+                            className={`px-3 py-1.5 rounded-[calc(var(--radius-md)-4px)] text-body-s font-medium capitalize transition-colors ${
                                 portalFilter === p
-                                    ? 'bg-[var(--accent)] text-white'
-                                    : 'bg-[var(--surface-soft)] text-[var(--muted)] hover:bg-[var(--line)]'
+                                    ? 'bg-[var(--surface)] text-[var(--text)] shadow-[var(--shadow-sm)]'
+                                    : 'text-[var(--muted)] hover:text-[var(--text)]'
                             }`}
                         >
                             {p}
@@ -117,12 +124,14 @@ export default function UsersPage() {
                     {filtered.length === 0 ? (
                         <EmptyState variant="empty" title="No users found" description="No users match your search." />
                     ) : (
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto thin-scroll">
                             <table className="w-full text-body-s">
                                 <thead className="border-b border-[var(--line)]">
                                 <tr>
-                                    {['User', 'Portal', 'Company', 'Status', 'Last Active', 'Actions'].map((h) => (
-                                        <th key={h} className="p-4 text-left text-label-xs text-[var(--muted)] font-semibold">{h}</th>
+                                    {['User', 'Portal', 'Company', 'Status', 'Last active', 'Actions'].map((h) => (
+                                        <th key={h} className="p-4 text-left text-label-xs text-[var(--muted)]">
+                                            {h}
+                                        </th>
                                     ))}
                                 </tr>
                                 </thead>
