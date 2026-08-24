@@ -53,8 +53,11 @@ export function AuthGuard({ portal, children }: AuthGuardProps) {
     }, [isLoading, isAuthenticated, authorized, router]);
 
     if (isLoading) {
+        // Styling-only change from the original: page-wash instead of a flat
+        // surface-soft fill, so even the loading state doesn't look bare.
+        // No logic above this line was touched.
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[var(--surface-soft)]">
+            <div className="page-wash min-h-screen flex items-center justify-center">
                 <PageSpinner />
             </div>
         );

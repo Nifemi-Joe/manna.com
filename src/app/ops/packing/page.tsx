@@ -60,10 +60,12 @@ const MOCK: CompanyGroup[] = [
     },
 ];
 
+// Warmer palette than the original blue/green/yellow-100 set, tied to the
+// brand accents instead of generic Tailwind grays
 const TAG_COLORS: Record<string, string> = {
-    'vegan': 'bg-green-100 text-green-800',
-    'halal': 'bg-blue-100 text-blue-800',
-    'spice-free': 'bg-yellow-100 text-yellow-800',
+    vegan: 'bg-[var(--brand-green-tint)] text-[var(--brand-green)]',
+    halal: 'bg-[var(--accent-2-soft)] text-[var(--accent-2-hover)]',
+    'spice-free': 'bg-[var(--surface-soft)] text-[var(--muted)] border border-[var(--line)]',
 };
 
 export default function PackingPage() {
@@ -99,16 +101,16 @@ export default function PackingPage() {
         >
             <div className="flex items-center justify-between print:hidden">
                 <div>
-                    <h1 className="text-heading-s text-[var(--text)]">Packing Lists</h1>
+                    <h1 className="text-heading-m text-[var(--text)]">Packing lists</h1>
                     <p className="text-body-s text-[var(--muted)] mt-1">
-                        {groups.reduce((acc, g) => acc + g.totalItems, 0)} total items for today
+                        <span className="font-mono-num">{groups.reduce((acc, g) => acc + g.totalItems, 0)}</span> total items for today
                     </p>
                 </div>
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => window.print()}>
                         <Printer size={14} className="mr-1.5" />Print
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="amber" size="sm">
                         <Download size={14} className="mr-1.5" />Export CSV
                     </Button>
                 </div>
@@ -124,7 +126,7 @@ export default function PackingPage() {
                 groups.map((group) => {
                     const isCollapsed = collapsed.has(group.company);
                     return (
-                        <Card key={group.company} className="print:shadow-none print:border">
+                        <Card key={group.company} accent="var(--brand-green)" padding="none" className="print:shadow-none print:border">
                             <CardContent className="p-0">
                                 {/* Company header */}
                                 <button
@@ -136,9 +138,9 @@ export default function PackingPage() {
                                         <p className="text-body-s text-[var(--muted)]">{group.address}</p>
                                     </div>
                                     <div className="flex items-center gap-3">
-                    <span className="text-label-xs font-semibold bg-[var(--accent)] text-white px-2 py-0.5 rounded-full">
-                      {group.totalItems} items
-                    </span>
+                                        <span className="text-label-xs font-semibold font-mono-num bg-[var(--brand-green)] text-white px-2 py-0.5 rounded-full">
+                                            {group.totalItems} items
+                                        </span>
                                         {isCollapsed ? <ChevronRight size={16} className="text-[var(--muted)]" /> : <ChevronDown size={16} className="text-[var(--muted)]" />}
                                     </div>
                                 </button>
@@ -158,9 +160,9 @@ export default function PackingPage() {
                                             <div key={mealGroup.mealName} className="p-4">
                                                 <p className="text-body-s font-semibold text-[var(--text)] mb-3">
                                                     {mealGroup.mealName}
-                                                    <span className="ml-2 text-label-xs text-[var(--muted)] font-normal">
-                            × {mealGroup.items.length}
-                          </span>
+                                                    <span className="ml-2 text-label-xs text-[var(--muted)] font-normal font-mono-num">
+                                                        × {mealGroup.items.length}
+                                                    </span>
                                                 </p>
                                                 <div className="space-y-1.5">
                                                     {mealGroup.items.map((item, i) => (
@@ -168,9 +170,9 @@ export default function PackingPage() {
                                                             <span className="w-5 h-5 bg-[var(--surface-soft)] border border-[var(--line)] rounded flex items-center justify-center text-label-xs print:border-black" />
                                                             <span className="text-[var(--text)]">{item.employeeName}</span>
                                                             {item.tags.map((tag) => (
-                                                                <span key={tag} className={`px-1.5 py-0.5 rounded text-label-xs font-medium ${TAG_COLORS[tag] ?? 'bg-gray-100 text-gray-700'}`}>
-                                  {tag}
-                                </span>
+                                                                <span key={tag} className={`px-1.5 py-0.5 rounded text-label-xs font-medium ${TAG_COLORS[tag] ?? 'bg-[var(--surface-soft)] text-[var(--muted)]'}`}>
+                                                                    {tag}
+                                                                </span>
                                                             ))}
                                                             {item.notes && (
                                                                 <span className="text-[var(--muted)] italic">{item.notes}</span>
@@ -189,11 +191,11 @@ export default function PackingPage() {
             )}
 
             <style jsx global>{`
-        @media print {
-          .print\\:hidden { display: none !important; }
-          body { font-size: 12px; }
-        }
-      `}</style>
+                @media print {
+                    .print\\:hidden { display: none !important; }
+                    body { font-size: 12px; }
+                }
+            `}</style>
         </motion.div>
     );
 }

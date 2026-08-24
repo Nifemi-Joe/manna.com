@@ -1,79 +1,55 @@
 import React from "react";
-import { cn } from "@/lib/utils";
 
-interface MannaLogoProps {
-    size?: "sm" | "md" | "lg";
-    variant?: "full" | "mark";
-    className?: string;
-}
-
-const sizeMap = {
-    sm: { height: 28, markSize: 24, fontSize: 16 },
-    md: { height: 36, markSize: 32, fontSize: 20 },
-    lg: { height: 48, markSize: 44, fontSize: 28 },
-};
+const SIZES = {
+    sm: { mark: 22, text: 15, gap: 8 },
+    md: { mark: 28, text: 19, gap: 10 },
+    lg: { mark: 36, text: 24, gap: 12 },
+} as const;
 
 export function MannaLogo({
                               size = "md",
-                              variant = "full",
-                              className,
-                          }: MannaLogoProps) {
-    const { height, markSize, fontSize } = sizeMap[size];
+                              variant = "default",
+                              iconOnly = false,
+                          }: {
+    size?: keyof typeof SIZES;
+    /** "default" = brand-green mark on light bg · "inverted" = white mark on dark bg */
+    variant?: "default" | "inverted";
+    /** Renders just the bowl mark, no wordmark — for collapsed sidebars */
+    iconOnly?: boolean;
+}) {
+    const { mark, text, gap } = SIZES[size];
+    const markColor = variant === "inverted" ? "#FFFFFF" : "var(--brand-green)";
+    const textColor = variant === "inverted" ? "#FFFFFF" : "var(--text)";
+
+    const markSvg = (
+        <svg width={mark} height={mark} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <path
+                d="M6 15C6 15 8 9 16 9C24 9 26 15 26 15"
+                stroke={markColor}
+                strokeWidth="2.4"
+                strokeLinecap="round"
+            />
+            <path
+                d="M5 15.5H27C27 21.8 22.2 26 16 26C9.8 26 5 21.8 5 15.5Z"
+                fill={markColor}
+            />
+            <circle cx="16" cy="5.5" r="1.6" fill={markColor} />
+        </svg>
+    );
+
+    if (iconOnly) return markSvg;
 
     return (
-        <span
-            className={cn("inline-flex items-center gap-2.5 select-none", className)}
-            aria-label="Manna Office Meals"
-        >
-      {/* Mark: stylised grain/bowl icon */}
-            <svg
-                width={markSize}
-                height={markSize}
-                viewBox="0 0 40 40"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
+        <span className="inline-flex items-center select-none" style={{ gap }}>
+            {/* The mark: a bowl with a rising "steam / grain" arc — reads as
+                food + growth at a glance, without leaning on a literal fork icon. */}
+            {markSvg}
+            <span
+                className="font-[var(--font-display)] font-semibold leading-none"
+                style={{ fontSize: text, color: textColor }}
             >
-        <rect width="40" height="40" rx="10" fill="var(--brand-green)" />
-                {/* Grain stalks */}
-                <path
-                    d="M20 30 L20 14"
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                />
-        <path
-            d="M20 20 C17 18 14 19 14 16 C14 13 17 12 20 14"
-            stroke="white"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            fill="none"
-        />
-        <path
-            d="M20 17 C23 15 26 16 26 13 C26 10 23 9 20 11"
-            stroke="white"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            fill="none"
-        />
-                {/* Bowl arc */}
-                <path
-                    d="M12 30 Q12 34 20 34 Q28 34 28 30"
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    fill="none"
-                />
-      </svg>
-
-            {variant === "full" && (
-                <span
-                    className="font-[var(--font-display)] font-700 text-[var(--brand-green)]"
-                    style={{ fontSize, lineHeight: 1 }}
-                >
-          Manna
+                Manna
+            </span>
         </span>
-            )}
-    </span>
     );
 }

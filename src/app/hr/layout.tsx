@@ -1,17 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-    LayoutDashboard,
-    ShoppingBag,
-    Users,
-    Sliders,
-    Receipt,
-    BarChart2,
-    Shield,
-    ChevronLeft,
-    ChevronRight,
-} from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Users, Sliders, Receipt, BarChart2, Shield, Layers } from "lucide-react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/layout/AuthGuard";
 import { Sidebar, type NavGroup } from "@/components/layout/Sidebar";
@@ -25,6 +15,8 @@ const navGroups: NavGroup[] = [
             { label: "Dashboard", href: "/hr/dashboard", icon: LayoutDashboard },
             { label: "Orders", href: "/hr/orders", icon: ShoppingBag },
             { label: "Employees", href: "/hr/employees", icon: Users },
+            // NEW: staff levels management
+            { label: "Staff Levels", href: "/hr/levels", icon: Layers },
         ],
     },
     {
@@ -48,39 +40,12 @@ function HRShell({ children }: { children: React.ReactNode }) {
                 <Sidebar
                     groups={navGroups}
                     collapsed={collapsed}
-                    logo={
-                        collapsed ? (
-                            <MannaLogo size="sm" variant="mark" />
-                        ) : (
-                            <MannaLogo size="sm" />
-                        )
-                    }
-                    footer={
-                        <button
-                            onClick={() => setCollapsed(!collapsed)}
-                            className="flex items-center gap-2 text-body-s text-[var(--muted)] hover:text-[var(--text)] transition-colors"
-                            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                        >
-                            {collapsed ? (
-                                <ChevronRight size={16} />
-                            ) : (
-                                <>
-                                    <ChevronLeft size={16} />
-                                    <span>Collapse</span>
-                                </>
-                            )}
-                        </button>
-                    }
+                    onToggleCollapse={() => setCollapsed((c) => !c)}
+                    logo={collapsed ? <MannaLogo size="sm" variant="inverted" iconOnly /> : <MannaLogo size="sm" variant="inverted" />}
                 />
-
                 <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                    <TopBar
-                        title={user?.companyName ?? "HR Portal"}
-                        subtitle="HR & Admin"
-                    />
-                    <main className="flex-1 overflow-y-auto p-6">
-                        {children}
-                    </main>
+                    <TopBar title={user?.companyName ?? "HR Portal"} subtitle="HR & Admin" />
+                    <main className="page-wash flex-1 overflow-y-auto p-6">{children}</main>
                 </div>
             </div>
         </AuthGuard>

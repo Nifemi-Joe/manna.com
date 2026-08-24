@@ -75,7 +75,7 @@ export default function ContentEditorPage() {
         try {
             await api.studio.content.publish(key);
         } catch { /* ok */ }
-        setEntry((prev:any) => prev ? { ...prev, status: 'published', lastPublishedAt: new Date().toISOString() } : prev);
+        setEntry((prev: any) => (prev ? { ...prev, status: 'published', lastPublishedAt: new Date().toISOString() } : prev));
         toast.success('Content published');
         setPublishing(false);
     }
@@ -113,8 +113,11 @@ export default function ContentEditorPage() {
     return (
         <div className="flex h-[calc(100vh-57px)]">
             <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="flex items-center gap-3 px-6 py-3 border-b border-[var(--line)] bg-[var(--surface)]">
-                    <Link href="/studio" className="p-1.5 rounded-lg hover:bg-[var(--surface-soft)] text-[var(--muted)]">
+                <div
+                    className="flex items-center gap-3 px-6 py-3 border-b border-[var(--line)] bg-[var(--surface)]"
+                    style={{ borderTop: "3px solid var(--brand-green)" }}
+                >
+                    <Link href="/studio" className="p-1.5 rounded-[var(--radius-md)] hover:bg-[var(--surface-soft)] text-[var(--muted)]">
                         <ChevronLeft size={16} />
                     </Link>
                     <div className="flex-1 min-w-0">
@@ -125,7 +128,7 @@ export default function ContentEditorPage() {
                                     {entry.status}
                                 </Badge>
                             )}
-                            {isDirty && <span className="w-2 h-2 bg-[var(--warning)] rounded-full" title="Unsaved changes" />}
+                            {isDirty && <span className="w-2 h-2 rounded-full" style={{ background: 'var(--accent-3)' }} title="Unsaved changes" />}
                         </div>
                         <p className="text-label-xs text-[var(--muted)]">{key}</p>
                     </div>
@@ -133,27 +136,27 @@ export default function ContentEditorPage() {
                         <Button variant="ghost" size="sm" onClick={openRevisions}>
                             <Clock size={14} className="mr-1.5" />History
                         </Button>
-                        <Button variant="outline" size="sm" onClick={saveDraft} loading={saving}>
-                            <Save size={14} className="mr-1.5" />Save Draft
+                        <Button variant="amber" size="sm" onClick={saveDraft} loading={saving}>
+                            <Save size={14} className="mr-1.5" />Save draft
                         </Button>
-                        <Button size="sm" onClick={publishContent} loading={publishing}>
+                        <Button variant="coral" size="sm" onClick={publishContent} loading={publishing}>
                             <Send size={14} className="mr-1.5" />Publish
                         </Button>
                     </div>
                 </div>
 
                 <div className="flex-1 overflow-hidden flex">
-          <textarea
-              value={content}
-              onChange={(e) => { setContent(e.target.value); setIsDirty(true); }}
-              className="flex-1 p-6 resize-none font-mono text-body-s text-[var(--text)] bg-[var(--surface)] focus:outline-none border-r border-[var(--line)]"
-              placeholder="Start writing..."
-              spellCheck
-              aria-label="Content editor"
-          />
+                    <textarea
+                        value={content}
+                        onChange={(e) => { setContent(e.target.value); setIsDirty(true); }}
+                        className="flex-1 p-6 resize-none font-[var(--font-mono)] text-body-s text-[var(--text)] bg-[var(--surface)] focus:outline-none border-r border-[var(--line)]"
+                        placeholder="Start writing..."
+                        spellCheck
+                        aria-label="Content editor"
+                    />
                     <div className="w-64 shrink-0 p-4 space-y-4 overflow-y-auto bg-[var(--surface-soft)]">
                         <div>
-                            <p className="text-label-xs text-[var(--muted)] mb-2">METADATA</p>
+                            <p className="text-label-xs text-[var(--muted)] mb-2">Metadata</p>
                             <div className="space-y-3 text-body-s">
                                 {[
                                     ['Key', entry?.key],
@@ -164,7 +167,7 @@ export default function ContentEditorPage() {
                                 ].map(([label, value]) => (
                                     <div key={label as string}>
                                         <p className="text-[var(--muted)]">{label}</p>
-                                        <p className="text-[var(--text)] font-mono text-xs break-all">{value ?? '--'}</p>
+                                        <p className="text-[var(--text)] font-mono-num break-all">{value ?? '--'}</p>
                                     </div>
                                 ))}
                             </div>
@@ -183,14 +186,14 @@ export default function ContentEditorPage() {
                         className="w-80 border-l border-[var(--line)] bg-[var(--surface)] flex flex-col"
                     >
                         <div className="flex items-center justify-between p-4 border-b border-[var(--line)]">
-                            <p className="text-body-s font-semibold text-[var(--text)]">Revision History</p>
-                            <button onClick={() => setShowRevisions(false)} className="p-1.5 rounded-lg hover:bg-[var(--surface-soft)] text-[var(--muted)]" aria-label="Close">
+                            <p className="text-body-s font-semibold text-[var(--text)]">Revision history</p>
+                            <button onClick={() => setShowRevisions(false)} className="p-1.5 rounded-[var(--radius-md)] hover:bg-[var(--surface-soft)] text-[var(--muted)]" aria-label="Close">
                                 <X size={16} />
                             </button>
                         </div>
                         <div className="flex-1 overflow-y-auto divide-y divide-[var(--line)]">
                             {revisionsLoading ? (
-                                <div className="p-4 space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 bg-[var(--surface-soft)] rounded-xl animate-pulse" />)}</div>
+                                <div className="p-4 space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-16 bg-[var(--surface-soft)] rounded-[var(--radius-lg)] animate-pulse" />)}</div>
                             ) : revisions.length === 0 ? (
                                 <div className="p-6 text-center text-body-s text-[var(--muted)]">No revision history yet</div>
                             ) : revisions.map((rev) => (

@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, CreditCard, AlertCircle } from 'lucide-react';
-import { formatNaira, formatDate } from '@/lib/utils';
+import { CreditCard, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import { formatNaira } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -11,25 +12,40 @@ import { SkeletonCard, SkeletonTable } from '@/components/ui/Skeleton';
 
 interface Invoice {
     id: string;
-    month: string;
+    period: string; // "YYYY-MM"
     total: number;
-    status: 'paid' | 'due' | 'overdue';
-    pdfUrl?: string;
+    status: 'paid' | 'due';
+    dueDate: string;
 }
 
-const MOCK_INVOICES: Invoice[] = [
-    { id: 'INV-2025-06', month: 'June 2025', total: 847500, status: 'due' },
-    { id: 'INV-2025-05', month: 'May 2025', total: 924000, status: 'paid', pdfUrl: '#' },
-    { id: 'INV-2025-04', month: 'April 2025', total: 812250, status: 'paid', pdfUrl: '#' },
-    { id: 'INV-2025-03', month: 'March 2025', total: 761500, status: 'paid', pdfUrl: '#' },
-];
+interface BillingData {
+    currentDue: number;
+    currentMonth: string;
+    invoices: Invoice[];
+}
+
+function monthLabel(ym: string) {
+    const [y, m] = ym.split('-').map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
 
 export default function BillingPage() {
-    const [invoices, setInvoices] = useState<Invoice[]>([]);
+    const [data, setData] = useState<BillingData | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setTimeout(() => { setInvoices(MOCK_INVOICES); setLoading(false); }, 600);
+        async function load() {
+            try {
+                const res = await fetch('/api/v1/hr/billing', { credentials: 'include' });
+                const json = await res.json();
+                setData(json);
+            } catch {
+                toast.error('Could not load billing data');
+            } finally {
+                setLoading(false);
+            }
+        }
+        load();
     }, []);
 
     if (loading) return (
@@ -39,116 +55,74 @@ export default function BillingPage() {
         </div>
     );
 
-    const current = invoices.find((i) => i.status === 'due' || i.status === 'overdue');
+    if (!data) return null;
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-            className="p-6 space-y-6 max-w-3xl"
-        >
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="p-6 space-y-6 max-w-3xl">
             <div>
-                <h1 className="text-heading-s text-[var(--text)]">Billing</h1>
-                <p className="text-body-s text-[var(--muted)] mt-1">Invoices and payment history</p>
+                <h1 className="text-heading-m text-[var(--text)]">Billing</h1>
+                <p className="text-body-s text-[var(--muted)] mt-1">
+                    Your company invoice — one line per month, covering everything your employees' allowances paid for.
+                    Anything they paid extra out of pocket doesn't appear here — that settled instantly with them via Paystack.
+                </p>
             </div>
 
-            {/* Current due */}
-            {current && (
-                <Card className="border-[var(--warning)] bg-amber-50/50">
-                    <CardContent className="p-4 flex items-center justify-between">
+            {data.currentDue > 0 && (
+                <Card accent="var(--warning)">
+                    <CardContent className="p-4 flex items-center justify-between flex-wrap gap-3">
                         <div className="flex items-center gap-3">
                             <AlertCircle size={18} className="text-[var(--warning)]" />
                             <div>
-                                <p className="text-body-s font-semibold text-[var(--text)]">{current.month} invoice due</p>
-                                <p className="text-body-s text-[var(--muted)]">{formatNaira(current.total)} outstanding</p>
+                                <p className="text-body-s font-semibold text-[var(--text)]">{monthLabel(data.currentMonth)} — accruing</p>
+                                <p className="text-body-s text-[var(--muted)] font-mono-num">{formatNaira(data.currentDue)} so far this month</p>
                             </div>
                         </div>
-                        <Button size="sm">Pay now</Button>
+                        <Button size="sm" variant="amber">Contact billing</Button>
                     </CardContent>
                 </Card>
             )}
 
-            {/* Monthly summary */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>June 2025 Summary</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {[
-                            { label: 'Total orders', value: '242' },
-                            { label: 'Total amount', value: formatNaira(847500) },
-                            { label: 'Credits applied', value: formatNaira(12500) },
-                            { label: 'Net due', value: formatNaira(835000) },
-                        ].map(({ label, value }) => (
-                            <div key={label} className="p-3 bg-[var(--surface-soft)] rounded-xl">
-                                <p className="text-label-xs text-[var(--muted)] mb-1">{label.toUpperCase()}</p>
-                                <p className="text-heading-s text-[var(--text)]">{value}</p>
-                            </div>
-                        ))}
-                    </div>
-                    <p className="mt-3 text-body-s text-[var(--muted)]">
-                        Note: Detailed billing API endpoint pending. Figures are aggregated from order data.
-                    </p>
-                </CardContent>
-            </Card>
-
-            {/* Invoice list */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Invoice History</CardTitle>
-                </CardHeader>
+            <Card accent="var(--brand-green)">
+                <CardHeader><CardTitle>Invoice history</CardTitle></CardHeader>
                 <CardContent className="p-0">
-                    <table className="w-full text-body-s">
-                        <thead className="border-b border-[var(--line)]">
-                        <tr>
-                            {['Month', 'Invoice', 'Total', 'Status', ''].map((h) => (
-                                <th key={h} className="p-4 text-left text-label-xs text-[var(--muted)] font-semibold">{h}</th>
-                            ))}
-                        </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[var(--line)]">
-                        {invoices.map((inv) => (
-                            <tr key={inv.id} className="hover:bg-[var(--surface-soft)] transition-colors">
-                                <td className="p-4 font-medium text-[var(--text)]">{inv.month}</td>
-                                <td className="p-4 text-[var(--muted)]">{inv.id}</td>
-                                <td className="p-4 text-[var(--text)]">{formatNaira(inv.total)}</td>
-                                <td className="p-4">
-                                    <Badge
-                                        variant={inv.status === 'paid' ? 'success' : inv.status === 'overdue' ? 'danger' : 'warning'}
-                                    >
-                                        {inv.status}
-                                    </Badge>
-                                </td>
-                                <td className="p-4">
-                                    {inv.pdfUrl && (
-                                        <Button variant="ghost" size="sm" className="gap-1.5">
-                                            <Download size={14} />PDF
-                                        </Button>
-                                    )}
-                                </td>
+                    {data.invoices.length === 0 ? (
+                        <p className="p-6 text-center text-body-s text-[var(--muted)]">No invoices yet — they're generated automatically once a month closes.</p>
+                    ) : (
+                        <table className="w-full text-body-s">
+                            <thead className="border-b border-[var(--line)]">
+                            <tr>
+                                {['Month', 'Invoice', 'Total', 'Status', 'Due'].map((h) => (
+                                    <th key={h} className="p-4 text-left text-label-xs text-[var(--muted)]">{h}</th>
+                                ))}
                             </tr>
-                        ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-[var(--line)]">
+                            {data.invoices.map((inv) => (
+                                <tr key={inv.id} className="hover:bg-[var(--surface-soft)] transition-colors">
+                                    <td className="p-4 font-medium text-[var(--text)]">{monthLabel(inv.period)}</td>
+                                    <td className="p-4 text-[var(--muted)] font-mono-num">{inv.id}</td>
+                                    <td className="p-4 text-[var(--text)] font-mono-num">{formatNaira(inv.total)}</td>
+                                    <td className="p-4"><Badge variant={inv.status === 'paid' ? 'success' : 'warning'}>{inv.status}</Badge></td>
+                                    <td className="p-4 text-[var(--muted)]">{inv.dueDate}</td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    )}
                 </CardContent>
             </Card>
 
-            {/* Payment method */}
-            <Card>
+            <Card accent="var(--accent-2)">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <CreditCard size={16} className="text-[var(--accent)]" />
-                        Payment Method
+                        <CreditCard size={16} className="text-[var(--accent-2-hover)]" />
+                        How billing works
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="flex items-center justify-between">
-                    <div>
-                        <p className="text-body-s font-medium text-[var(--text)]">Bank transfer (monthly invoice)</p>
-                        <p className="text-body-s text-[var(--muted)]">Payment due on the 5th of each month</p>
-                    </div>
-                    <Button variant="outline" size="sm">Update</Button>
+                <CardContent className="space-y-2 text-body-s text-[var(--muted)]">
+                    <p>• Your company is billed only for the portion of each order covered by an employee's allowance.</p>
+                    <p>• Anything an employee pays beyond their allowance goes straight through Paystack to us — it never touches your invoice.</p>
+                    <p>• Invoices close monthly and are due within 7 days.</p>
                 </CardContent>
             </Card>
         </motion.div>

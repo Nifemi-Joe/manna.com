@@ -65,7 +65,17 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         ) || undefined}
                         {...props}
                     />
-                    <label htmlFor={id} className="input-floating-label">
+                    {/* FIXED: label now gets a distinct resting position when a
+                        leading icon is present, via input-floating-label--with-icon.
+                        Previously it always sat at left:14px, directly on top of
+                        the icon glyph. */}
+                    <label
+                        htmlFor={id}
+                        className={cn(
+                            "input-floating-label",
+                            leadingIcon && "input-floating-label--with-icon"
+                        )}
+                    >
                         {label}
                     </label>
                     {isPassword && (
@@ -89,19 +99,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 </div>
 
                 {error && (
-                    <p
-                        id={errorId}
-                        role="alert"
-                        className="flex items-center gap-1 text-[var(--danger)] text-body-s"
-                    >
+                    <p id={errorId} role="alert" className="flex items-center gap-1 text-[var(--danger)] text-body-s">
                         <AlertCircle size={13} className="shrink-0" aria-hidden="true" />
                         {error}
                     </p>
                 )}
                 {hint && !error && (
-                    <p id={hintId} className="text-[var(--muted)] text-body-s">
-                        {hint}
-                    </p>
+                    <p id={hintId} className="text-[var(--muted)] text-body-s">{hint}</p>
                 )}
             </div>
         );
@@ -139,23 +143,15 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
               aria-describedby={error ? errorId : undefined}
               {...props}
           />
-                    <label htmlFor={id} className="input-floating-label">
-                        {label}
-                    </label>
+                    <label htmlFor={id} className="input-floating-label">{label}</label>
                 </div>
                 {error && (
-                    <p
-                        id={errorId}
-                        role="alert"
-                        className="flex items-center gap-1 text-[var(--danger)] text-body-s"
-                    >
+                    <p id={errorId} role="alert" className="flex items-center gap-1 text-[var(--danger)] text-body-s">
                         <AlertCircle size={13} className="shrink-0" aria-hidden="true" />
                         {error}
                     </p>
                 )}
-                {hint && !error && (
-                    <p className="text-[var(--muted)] text-body-s">{hint}</p>
-                )}
+                {hint && !error && <p className="text-[var(--muted)] text-body-s">{hint}</p>}
             </div>
         );
     }
@@ -183,36 +179,20 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
                     <select
                         ref={ref}
                         id={id}
-                        className={cn(
-                            "input-floating appearance-none cursor-pointer",
-                            error && "error",
-                            className
-                        )}
+                        className={cn("input-floating appearance-none cursor-pointer", error && "error", className)}
                         aria-invalid={!!error}
                         aria-describedby={error ? errorId : undefined}
                         {...props}
                     >
-                        {placeholder && (
-                            <option value="" disabled>
-                                {placeholder}
-                            </option>
-                        )}
+                        {placeholder && <option value="" disabled>{placeholder}</option>}
                         {options.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                            </option>
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
                     </select>
-                    <label htmlFor={id} className="input-floating-label">
-                        {label}
-                    </label>
+                    <label htmlFor={id} className="input-floating-label">{label}</label>
                 </div>
                 {error && (
-                    <p
-                        id={errorId}
-                        role="alert"
-                        className="flex items-center gap-1 text-[var(--danger)] text-body-s"
-                    >
+                    <p id={errorId} role="alert" className="flex items-center gap-1 text-[var(--danger)] text-body-s">
                         <AlertCircle size={13} className="shrink-0" aria-hidden="true" />
                         {error}
                     </p>

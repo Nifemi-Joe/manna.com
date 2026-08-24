@@ -5,6 +5,15 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
     variant?: "default" | "soft" | "bordered";
     padding?: "none" | "sm" | "md" | "lg";
     hover?: boolean;
+    /**
+     * Adds a 3px colored bar along the card's top edge. Pass a CSS color
+     * (a token like "var(--brand-green)", "var(--accent-2)", or
+     * "var(--accent-3)") to give the card a category color at a glance —
+     * e.g. green for HR/finance cards, gold for menu/order cards, coral
+     * for anything needing attention. This is the fastest way to break
+     * up a page that's all identical white boxes.
+     */
+    accent?: string;
 }
 
 const paddingStyles = {
@@ -27,8 +36,10 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
             variant = "default",
             padding = "md",
             hover = false,
+            accent,
             className,
             children,
+            style,
             ...props
         },
         ref
@@ -37,13 +48,14 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
             <div
                 ref={ref}
                 className={cn(
-                    "rounded-[var(--radius-lg)]",
+                    "relative rounded-[var(--radius-lg)] overflow-hidden",
                     variantStyles[variant],
                     paddingStyles[padding],
                     hover &&
-                    "transition-shadow duration-[160ms] hover:shadow-[var(--shadow-md)] cursor-pointer",
+                    "transition-all duration-[160ms] hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 cursor-pointer",
                     className
                 )}
+                style={accent ? { borderTop: `3px solid ${accent}`, ...style } : style}
                 {...props}
             >
                 {children}

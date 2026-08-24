@@ -13,8 +13,8 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { SkeletonCard } from '@/components/ui/Skeleton';
 
 function FileIcon({ type }: { type: string }) {
-    if (type.startsWith('image/')) return <Image size={20} className="text-blue-500" />;
-    if (type.includes('pdf')) return <FileText size={20} className="text-red-500" />;
+    if (type.startsWith('image/')) return <Image size={20} className="text-[var(--brand-green)]" />;
+    if (type.includes('pdf')) return <FileText size={20} className="text-[var(--accent-3)]" />;
     return <File size={20} className="text-[var(--muted)]" />;
 }
 
@@ -83,7 +83,7 @@ export default function MediaPage() {
         try {
             await api.studio.media.update(editingAsset.id, { alt: altText });
         } catch { /* ok */ }
-        setAssets((prev) => prev.map((a) => a.id === editingAsset.id ? { ...a, alt: altText } : a));
+        setAssets((prev) => prev.map((a) => (a.id === editingAsset.id ? { ...a, alt: altText } : a)));
         toast.success('Metadata updated');
         setEditingAsset(null);
     }
@@ -92,7 +92,7 @@ export default function MediaPage() {
         <div className="p-6 max-w-4xl mx-auto">
             <SkeletonCard lines={2} />
             <div className="grid grid-cols-4 gap-4 mt-4">
-                {[1,2,3,4].map(i => <div key={i} className="h-32 bg-[var(--surface-soft)] rounded-xl animate-pulse" />)}
+                {[1, 2, 3, 4].map((i) => <div key={i} className="h-32 bg-[var(--surface)] rounded-[var(--radius-lg)] animate-pulse" />)}
             </div>
         </div>
     );
@@ -106,19 +106,15 @@ export default function MediaPage() {
         >
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-heading-s text-[var(--text)]">Media Library</h1>
-                    <p className="text-body-s text-[var(--muted)] mt-1">{assets.length} assets</p>
+                    <h1 className="text-heading-m text-[var(--text)]">Media library</h1>
+                    <p className="text-body-s text-[var(--muted)] mt-1">
+                        <span className="font-mono-num">{assets.length}</span> assets
+                    </p>
                 </div>
-                <Button size="sm" onClick={() => fileInputRef.current?.click()}>
+                <Button variant="amber" size="sm" onClick={() => fileInputRef.current?.click()}>
                     <Upload size={14} className="mr-1.5" />Upload
                 </Button>
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => handleUpload(e.target.files)}
-                />
+                <input ref={fileInputRef} type="file" multiple className="hidden" onChange={(e) => handleUpload(e.target.files)} />
             </div>
 
             {/* Drop zone */}
@@ -126,13 +122,13 @@ export default function MediaPage() {
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleUpload(e.dataTransfer.files); }}
-                className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-                    isDragging ? 'border-[var(--accent)] bg-blue-50' : 'border-[var(--line)] hover:border-[var(--accent)]'
+                className={`border-2 border-dashed rounded-[var(--radius-lg)] p-8 text-center transition-colors ${
+                    isDragging ? 'border-[var(--accent-2)] bg-[var(--accent-2-soft)]' : 'border-[var(--line)] hover:border-[var(--accent-2)]'
                 }`}
             >
-                <Upload size={20} className="mx-auto mb-2 text-[var(--muted)]" />
+                <Upload size={20} className="mx-auto mb-2 text-[var(--accent-2)]" />
                 <p className="text-body-s text-[var(--muted)]">
-                    Drop files here or <button onClick={() => fileInputRef.current?.click()} className="text-[var(--accent)] underline">browse</button>
+                    Drop files here or <button onClick={() => fileInputRef.current?.click()} className="text-[var(--accent-2-hover)] underline">browse</button>
                 </p>
                 <p className="text-label-xs text-[var(--muted)] mt-1">Images, PDFs up to 10MB</p>
             </div>
@@ -149,12 +145,11 @@ export default function MediaPage() {
                                 layout
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className={`relative group rounded-xl border cursor-pointer transition-colors overflow-hidden ${
-                                    selected?.id === asset.id ? 'border-[var(--accent)] ring-2 ring-[var(--accent)]' : 'border-[var(--line)] hover:border-[var(--accent)]'
+                                className={`relative group rounded-[var(--radius-lg)] border cursor-pointer transition-colors overflow-hidden ${
+                                    selected?.id === asset.id ? 'border-[var(--accent-2)] ring-2 ring-[var(--accent-2)]' : 'border-[var(--line)] hover:border-[var(--accent-2)]'
                                 }`}
                                 onClick={() => setSelected(selected?.id === asset.id ? null : asset)}
                             >
-                                {/* Preview */}
                                 <div className="aspect-square bg-[var(--surface-soft)] flex items-center justify-center">
                                     {asset.mimeType.startsWith('image/') ? (
                                         <img src={asset.url} alt={asset.alt ?? asset.filename} className="w-full h-full object-cover" />
@@ -162,15 +157,13 @@ export default function MediaPage() {
                                         <FileIcon type={asset.mimeType} />
                                     )}
                                 </div>
-                                {/* Info */}
-                                <div className="p-2">
+                                <div className="p-2 bg-[var(--surface)]">
                                     <p className="text-label-xs font-medium text-[var(--text)] truncate">{asset.filename}</p>
                                     <p className="text-label-xs text-[var(--muted)]">{formatBytes(asset.sizeBytes)}</p>
                                 </div>
-                                {/* Edit button */}
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setEditingAsset(asset); setAltText(asset.alt ?? ''); }}
-                                    className="absolute top-2 right-2 p-1 bg-white/80 backdrop-blur-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                    className="absolute top-2 right-2 p-1 bg-white/90 backdrop-blur-sm rounded-[var(--radius-md)] opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
                                     aria-label="Edit metadata"
                                 >
                                     <Edit3 size={12} className="text-[var(--muted)]" />
@@ -188,9 +181,10 @@ export default function MediaPage() {
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 16 }}
-                        className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--surface)] border border-[var(--line)] rounded-2xl shadow-xl p-4 flex items-center gap-4 z-50 max-w-lg w-full mx-4"
+                        className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--surface)] border border-[var(--line)] rounded-[var(--radius-xl)] shadow-[var(--shadow-lg)] p-4 flex items-center gap-4 z-50 max-w-lg w-full mx-4"
+                        style={{ borderTop: "3px solid var(--accent-2)" }}
                     >
-                        <div className="w-12 h-12 bg-[var(--surface-soft)] rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                        <div className="w-12 h-12 bg-[var(--surface-soft)] rounded-[var(--radius-md)] flex items-center justify-center shrink-0 overflow-hidden">
                             {selected.mimeType.startsWith('image/') ? (
                                 <img src={selected.url} alt={selected.filename} className="w-full h-full object-cover" />
                             ) : (
@@ -211,7 +205,7 @@ export default function MediaPage() {
             </AnimatePresence>
 
             {/* Edit metadata modal */}
-            <Modal isOpen={!!editingAsset} onClose={() => setEditingAsset(null)} title="Edit Asset Metadata">
+            <Modal isOpen={!!editingAsset} onClose={() => setEditingAsset(null)} title="Edit asset metadata">
                 <div className="space-y-4">
                     <div>
                         <p className="text-body-s text-[var(--muted)] mb-1">Filename</p>
@@ -224,7 +218,7 @@ export default function MediaPage() {
                         placeholder="Describe this image for accessibility"
                     />
                     <div className="flex gap-3">
-                        <Button onClick={saveMetadata}>Save</Button>
+                        <Button variant="amber" onClick={saveMetadata}>Save</Button>
                         <Button variant="outline" onClick={() => setEditingAsset(null)}>Cancel</Button>
                     </div>
                 </div>

@@ -14,6 +14,16 @@ import { cn } from "@/lib/utils";
 
 const STATUSES: DeliveryStatus[] = ["scheduled", "packed", "dispatched", "delivered", "failed"];
 
+// Each status chip gets its own color so the filter row itself communicates
+// state, not just the badges inside the table.
+const STATUS_TINTS: Record<DeliveryStatus, string> = {
+    scheduled: "var(--muted)",
+    packed: "var(--accent-2-hover)",
+    dispatched: "var(--brand-green)",
+    delivered: "var(--success)",
+    failed: "var(--danger)",
+};
+
 export default function OpsDispatchPage() {
     const [deliveries, setDeliveries] = useState<Delivery[]>([]);
     const [total, setTotal] = useState(0);
@@ -41,9 +51,7 @@ export default function OpsDispatchPage() {
         setUpdating(id);
         try {
             const { delivery } = await api.ops.deliveries.update(id, { status });
-            setDeliveries((prev) =>
-                prev.map((d) => (d.id === id ? delivery : d))
-            );
+            setDeliveries((prev) => prev.map((d) => (d.id === id ? delivery : d)));
             toast.success(`Marked as ${status}`);
         } catch (err: any) {
             toast.error(err instanceof ApiError ? err.message : "Update failed");
@@ -70,7 +78,7 @@ export default function OpsDispatchPage() {
                         setSelected(next);
                     }}
                     aria-label={`Select delivery for ${r.employeeName}`}
-                    className="w-4 h-4 accent-[var(--accent)]"
+                    className="w-4 h-4 accent-[var(--brand-green)]"
                 />
             ),
         },
@@ -78,15 +86,9 @@ export default function OpsDispatchPage() {
             key: "company",
             header: "Company",
             sortable: true,
-            render: (r) => (
-                <span className="font-medium text-[var(--text)]">{r.companyName}</span>
-            ),
+            render: (r) => <span className="font-medium text-[var(--text)]">{r.companyName}</span>,
         },
-        {
-            key: "employee",
-            header: "Employee",
-            render: (r) => r.employeeName,
-        },
+        { key: "employee", header: "Employee", render: (r) => r.employeeName },
         {
             key: "meal",
             header: "Meal",
@@ -95,23 +97,17 @@ export default function OpsDispatchPage() {
                     <span>{r.mealName}</span>
                     {r.dietary.length > 0 && (
                         <span className="ml-2 text-[10px] text-[var(--brand-green)] font-semibold">
-              {r.dietary.map((d: any) => d.label).join(" · ")}
-            </span>
+                            {r.dietary.map((d: any) => d.label).join(" · ")}
+                        </span>
                     )}
                 </div>
             ),
         },
-        {
-            key: "status",
-            header: "Status",
-            render: (r) => <DeliveryStatusBadge status={r.status} />,
-        },
+        { key: "status", header: "Status", render: (r) => <DeliveryStatusBadge status={r.status} /> },
         {
             key: "updated",
             header: "Last updated",
-            render: (r) => (
-                <span className="text-[var(--muted)]">{formatDateTime(r.updatedAt)}</span>
-            ),
+            render: (r) => <span className="text-[var(--muted)]">{formatDateTime(r.updatedAt)}</span>,
         },
         {
             key: "actions",
@@ -122,7 +118,7 @@ export default function OpsDispatchPage() {
                     {r.status === "packed" && (
                         <Button
                             size="sm"
-                            variant="outline"
+                            variant="amber"
                             loading={updating === r.id}
                             onClick={() => updateStatus(r.id, "dispatched")}
                             leadingIcon={<Truck size={13} />}
@@ -149,7 +145,7 @@ export default function OpsDispatchPage() {
                             variant="ghost"
                             onClick={() => updateStatus(r.id, "failed")}
                             leadingIcon={<Flag size={13} />}
-                            className="text-[11px] text-[var(--warning)]"
+                            className="text-[11px] text-[var(--danger)]"
                             aria-label={`Flag delivery for ${r.employeeName} as failed`}
                         >
                             Flag
@@ -164,38 +160,39 @@ export default function OpsDispatchPage() {
         <div className="space-y-4 max-w-7xl">
             <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
-                    <h1 className="text-heading-s text-[var(--text)]">Dispatch</h1>
+                    <h1 className="text-heading-m text-[var(--text)]">Dispatch</h1>
                     <p className="text-body-s text-[var(--muted)] mt-0.5">
-                        {total} deliveries today
+                        <span className="font-mono-num">{total}</span> deliveries today
                     </p>
                 </div>
             </div>
 
-            {/* Status chips */}
+            {/* Status chips — each carries its own status color */}
             <div className="flex gap-2 flex-wrap" role="group" aria-label="Filter by status">
                 <button
                     onClick={() => setStatusFilter("")}
                     className={cn(
                         "px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-colors",
                         !statusFilter
-                            ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                            : "bg-[var(--surface)] text-[var(--muted)] border-[var(--line)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                            ? "bg-[var(--brand-green)] text-white border-[var(--brand-green)]"
+                            : "bg-[var(--surface)] text-[var(--muted)] border-[var(--line)] hover:border-[var(--brand-green)] hover:text-[var(--brand-green)]"
                     )}
                 >
                     All ({total})
                 </button>
                 {STATUSES.map((s) => {
                     const count = deliveries.filter((d) => d.status === s).length;
+                    const active = statusFilter === s;
                     return (
                         <button
                             key={s}
                             onClick={() => setStatusFilter(s)}
-                            className={cn(
-                                "px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-colors capitalize",
-                                statusFilter === s
-                                    ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                                    : "bg-[var(--surface)] text-[var(--muted)] border-[var(--line)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
-                            )}
+                            className="px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-colors capitalize"
+                            style={
+                                active
+                                    ? { background: STATUS_TINTS[s], color: "white", borderColor: STATUS_TINTS[s] }
+                                    : { color: "var(--muted)", borderColor: "var(--line)" }
+                            }
                         >
                             {s} ({count})
                         </button>
@@ -203,7 +200,6 @@ export default function OpsDispatchPage() {
                 })}
             </div>
 
-            {/* Company filter */}
             {companies.length > 1 && (
                 <select
                     value={companyFilter}
@@ -218,15 +214,15 @@ export default function OpsDispatchPage() {
                 </select>
             )}
 
-            {/* Bulk action bar */}
             {selected.size > 0 && (
-                <div className="flex items-center gap-3 px-4 py-3 bg-[var(--accent)]/10 rounded-[var(--radius-lg)] border border-[var(--accent)]/20">
-          <span className="text-body-s font-semibold text-[var(--accent)]">
-            {selected.size} selected
-          </span>
+                <div
+                    className="flex items-center gap-3 px-4 py-3 rounded-[var(--radius-lg)] text-white"
+                    style={{ background: "linear-gradient(135deg, var(--brand-green), var(--brand-green-dark))" }}
+                >
+                    <span className="text-body-s font-semibold font-mono-num">{selected.size} selected</span>
                     <Button
                         size="sm"
-                        variant="filled"
+                        variant="amber"
                         onClick={async () => {
                             for (const id of selected) await updateStatus(id, "dispatched");
                             setSelected(new Set());
@@ -234,7 +230,7 @@ export default function OpsDispatchPage() {
                     >
                         Mark all dispatched
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>
+                    <Button size="sm" variant="ghost" className="text-white hover:bg-white/15" onClick={() => setSelected(new Set())}>
                         Clear
                     </Button>
                 </div>
@@ -243,18 +239,20 @@ export default function OpsDispatchPage() {
             {loading ? (
                 <SkeletonTable rows={8} cols={7} />
             ) : (
-                <Table
-                    columns={columns}
-                    data={deliveries}
-                    keyExtractor={(r) => r.id}
-                    emptyState={
-                        <EmptyState
-                            illustration="no-deliveries"
-                            heading="No deliveries match this filter"
-                            description="Try clearing the filters to see all deliveries."
-                        />
-                    }
-                />
+                <div className="rounded-[var(--radius-lg)] overflow-hidden" style={{ borderTop: "3px solid var(--brand-green)" }}>
+                    <Table
+                        columns={columns}
+                        data={deliveries}
+                        keyExtractor={(r) => r.id}
+                        emptyState={
+                            <EmptyState
+                                illustration="no-deliveries"
+                                heading="No deliveries match this filter"
+                                description="Try clearing the filters to see all deliveries."
+                            />
+                        }
+                    />
+                </div>
             )}
         </div>
     );

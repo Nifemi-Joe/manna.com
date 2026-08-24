@@ -1,240 +1,247 @@
+/* ==========================================================================
+   MANNA — Design tokens, v3
+   Direction change from v2: the dark, editorial serif look read as moody
+   and unprofessional for a food company. This version leans into what
+   actually sells food — real photography, a brighter and more optimistic
+   green, and bold sans-serif headlines instead of a display serif. Green
+   stays as the brand color but is no longer the dominant background of
+   every section; white/cream carries most of the page, with green and
+   amber doing accent work.
+   ========================================================================== */
+
 @import "tailwindcss";
+/* If you're on Tailwind v3 instead of v4, delete the line above and
+   uncomment these three: */
+/* @tailwind base; @tailwind components; @tailwind utilities; */
 
-/* ─── Brand Tokens ─────────────────────────────────────── */
 :root {
-    --accent:       #1765D8;
-    --accent-hover: #1255B8;
-    --accent-2:     #0F9C7C;
-    --accent-2-hover: #0B8068;
-    --text:         #101828;
-    --muted:        #475467;
-    --surface:      #FFFFFF;
-    --surface-soft: #F7F9FC;
-    --line:         #D0D9E4;
-    --line-strong:  #B8C4D4;
-    --success:      #087443;
-    --success-bg:   #ECFDF3;
-    --warning:      #8A4F00;
-    --warning-bg:   #FFFAEB;
-    --danger:       #A12525;
-    --danger-bg:    #FEF3F2;
-    --brand-green:  #1A7A4A;
+    /* ---- Brand — brighter, fresher green than v2's dark forest tone ---- */
+    --brand-green: #2E9E52;
+    --brand-green-dark: #1F6B3B;
+    --brand-green-tint: #E9F6ED;
 
-    /* Radius scale */
-    --radius-sm:  6px;
-    --radius-md:  10px;
-    --radius-lg:  16px;
-    --radius-xl:  20px;
+    /* ---- Semantic actions ---- */
+    --accent: #2E9E52;
+    --accent-hover: #24803F;
+    --accent-2: #D98A2B;        /* amber — CTAs, "the meal" */
+    --accent-2-hover: #C07A22;
+    --accent-2-soft: #FBEEDA;
+    --accent-3: #D9542B;        /* chili red — urgency, sparingly */
+    --accent-3-hover: #C24623;
+    --accent-3-soft: #FCE6DD;
 
-    /* Shadow scale */
-    --shadow-xs: 0 1px 2px 0 rgb(16 24 40 / 0.05);
-    --shadow-sm: 0 1px 3px 0 rgb(16 24 40 / 0.10), 0 1px 2px -1px rgb(16 24 40 / 0.06);
-    --shadow-md: 0 4px 6px -1px rgb(16 24 40 / 0.08), 0 2px 4px -2px rgb(16 24 40 / 0.04);
-    --shadow-lg: 0 10px 15px -3px rgb(16 24 40 / 0.06), 0 4px 6px -4px rgb(16 24 40 / 0.04);
-    --shadow-xl: 0 20px 25px -5px rgb(16 24 40 / 0.08), 0 8px 10px -6px rgb(16 24 40 / 0.04);
+    /* ---- Ink & surfaces — white-dominant, not green-dominant ---- */
+    --text: #16211B;
+    --muted: #64716A;
+    --muted-soft: #8B968F;
+    --surface: #FFFFFF;
+    --surface-soft: #F6F7F4;
+    --surface-raised: #FFFFFF;
+    --line: #E4E7DE;
+    --line-strong: #C9CFC1;
+
+    /* ---- Status ---- */
+    --success: #2F8F5B;
+    --success-bg: #E7F5EC;
+    --warning: #C97B1F;
+    --warning-bg: #FBF0DC;
+    --danger: #C24B3F;
+    --danger-bg: #FBEAE7;
+
+    /* ---- Radii & elevation ---- */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --shadow-sm: 0 1px 2px rgba(14, 30, 22, 0.06);
+    --shadow-md: 0 10px 28px rgba(14, 30, 22, 0.09);
+    --shadow-lg: 0 24px 56px rgba(14, 30, 22, 0.16);
+
+
+    --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+    --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+    --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
-/* ─── Tailwind v4 Theme Extension ──────────────────────── */
-@theme inline {
-    /* Colors */
-    --color-accent:       var(--accent);
-    --color-accent-2:     var(--accent-2);
-    --color-brand-green:  var(--brand-green);
-    --color-text-base:    var(--text);
-    --color-muted:        var(--muted);
-    --color-surface:      var(--surface);
-    --color-surface-soft: var(--surface-soft);
-    --color-line:         var(--line);
-    --color-line-strong:  var(--line-strong);
-    --color-success:      var(--success);
-    --color-warning:      var(--warning);
-    --color-danger:       var(--danger);
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--surface-soft); color: var(--text); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
 
-    /* Fonts */
-    --font-display: var(--font-fraunces), Georgia, serif;
-    --font-sans:    var(--font-manrope), system-ui, sans-serif;
-}
-
-/* ─── Base Reset ───────────────────────────────────────── */
-*, *::before, *::after {
-    box-sizing: border-box;
-}
-
-html {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-}
-
-body {
-    background-color: var(--surface-soft);
-    color: var(--text);
-    font-family: var(--font-sans);
-    line-height: 1.5;
-}
-
-/* ─── Typography Utility Classes ──────────────────────── */
-@layer utilities {
-    .text-display-xl {
-        font-family: var(--font-display);
-        font-size: 56px;
-        line-height: 58px;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-    }
-
-    .text-display-l {
-        font-family: var(--font-display);
-        font-size: 44px;
-        line-height: 48px;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-    }
-
-    .text-heading-m {
-        font-family: var(--font-display);
-        font-size: 32px;
-        line-height: 36px;
-        font-weight: 600;
-        letter-spacing: -0.01em;
-    }
-
-    .text-heading-s {
-        font-family: var(--font-display);
-        font-size: 24px;
-        line-height: 28px;
-        font-weight: 600;
-        letter-spacing: -0.01em;
-    }
-
-    .text-body-l {
-        font-family: var(--font-sans);
-        font-size: 18px;
-        line-height: 28px;
-        font-weight: 400;
-    }
-
-    .text-body-m {
-        font-family: var(--font-sans);
-        font-size: 16px;
-        line-height: 24px;
-        font-weight: 400;
-    }
-
-    .text-body-s {
-        font-family: var(--font-sans);
-        font-size: 14px;
-        line-height: 22px;
-        font-weight: 400;
-    }
-
-    .text-label-xs {
-        font-family: var(--font-sans);
-        font-size: 11px;
-        line-height: 16px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-    }
-}
-
-/* ─── Focus Ring ───────────────────────────────────────── */
-@layer base {
-    :focus-visible {
-        outline: 2px solid var(--accent);
-        outline-offset: 2px;
-        border-radius: var(--radius-sm);
-    }
-}
-
-/* ─── Scrollbar ────────────────────────────────────────── */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-::-webkit-scrollbar-thumb {
-    background: var(--line-strong);
-    border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: var(--muted);
-}
-
-/* ─── Floating Label Input ─────────────────────────────── */
-.input-floating-wrap {
-    position: relative;
-}
-
-.input-floating {
-    width: 100%;
-    padding: 20px 14px 8px;
-    background: var(--surface);
-    border: 1.5px solid var(--line);
-    border-radius: var(--radius-md);
-    font-family: var(--font-sans);
-    font-size: 16px;
-    line-height: 24px;
-    color: var(--text);
-    transition: border-color 160ms ease-out, box-shadow 160ms ease-out;
-}
-
-.input-floating:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgb(23 101 216 / 0.12);
-    outline: none;
-}
-
-.input-floating.error {
-    border-color: var(--danger);
-}
-
-.input-floating.error:focus {
-    box-shadow: 0 0 0 3px rgb(161 37 37 / 0.12);
-}
-
-.input-floating-label {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-family: var(--font-sans);
-    font-size: 16px;
-    line-height: 24px;
-    color: var(--muted);
-    pointer-events: none;
-    transition: top 160ms ease-out, font-size 160ms ease-out, color 160ms ease-out;
-    transform-origin: left center;
-}
-
-.input-floating:focus ~ .input-floating-label,
-.input-floating:not(:placeholder-shown) ~ .input-floating-label {
-    top: 10px;
-    font-size: 11px;
-    line-height: 16px;
-    font-weight: 600;
-    color: var(--accent);
-    transform: none;
-}
-
-.input-floating.error:focus ~ .input-floating-label,
-.input-floating.error:not(:placeholder-shown) ~ .input-floating-label {
-    color: var(--danger);
-}
-
-/* ─── Print Styles ─────────────────────────────────────── */
-@media print {
-    .no-print { display: none !important; }
-    body { background: white; color: black; }
-}
-
-/* ─── Reduced Motion ───────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
+}
+
+/* ---- Cursor correctness (Tailwind Preflight resets buttons to default) ---- */
+button:not(:disabled), [role="button"]:not([aria-disabled="true"]), label[for], select, summary { cursor: pointer; }
+button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
+button span {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+}
+/* ==========================================================================
+   Type scale — bold sans headlines now, weight carries the "brand voice"
+   instead of a serif face.
+   ========================================================================== */
+.text-display-xl { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.5rem, 4.6vw, 4rem); line-height: 1.04; letter-spacing: -0.02em; }
+.text-display-l  { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.1rem, 3.6vw, 2.85rem); line-height: 1.08; letter-spacing: -0.015em; }
+.text-heading-m  { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.4rem, 2.2vw, 1.75rem); line-height: 1.2; letter-spacing: -0.01em; }
+.text-heading-s  { font-family: var(--font-sans);    font-weight: 700; font-size: 1.0625rem; line-height: 1.3; letter-spacing: -0.005em; }
+.text-body-l     { font-family: var(--font-sans);    font-weight: 400; font-size: 1.125rem; line-height: 1.65; }
+.text-body-m     { font-family: var(--font-sans);    font-weight: 400; font-size: 1rem; line-height: 1.6; }
+.text-body-s     { font-family: var(--font-sans);    font-weight: 400; font-size: 0.875rem; line-height: 1.55; }
+.text-label-xs   { font-family: var(--font-sans);    font-weight: 700; font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.font-mono-num   { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600; letter-spacing: -0.01em; }
+
+/* ==========================================================================
+   Ticket motif — kept from v2, used sparingly (pricing/order summaries)
+   ========================================================================== */
+.ticket { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+.ticket-tear { position: relative; }
+.ticket-tear::before { content: ""; position: absolute; left: -1px; right: -1px; height: 14px; background: radial-gradient(circle at 10px 0, transparent 7px, var(--surface-soft) 7.5px) top left / 20px 14px repeat-x; top: -1px; }
+.ticket-tear-bottom::after { content: ""; position: absolute; left: -1px; right: -1px; bottom: -1px; height: 14px; background: radial-gradient(circle at 10px 14px, transparent 7px, var(--surface-soft) 7.5px) bottom left / 20px 14px repeat-x; }
+.ticket-stub { border-top: 1px dashed var(--line-strong); }
+
+/* ==========================================================================
+   Motion
+   ========================================================================== */
+@keyframes riseIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.animate-rise { animation: riseIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes steamRise { 0% { transform: translateY(0) scaleX(1); opacity: 0; } 20% { opacity: 0.55; } 100% { transform: translateY(-26px) scaleX(1.3); opacity: 0; } }
+.animate-steam { animation: steamRise 3.2s ease-in-out infinite; }
+
+@keyframes gentleFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.animate-float { animation: gentleFloat 4.5s ease-in-out infinite; }
+
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.animate-marquee { animation: marquee 28s linear infinite; }
+.marquee-track:hover .animate-marquee { animation-play-state: paused; }
+
+.thin-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
+.thin-scroll::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 999px; }
+.thin-scroll::-webkit-scrollbar-track { background: transparent; }
+
+/* App-shell background — noticeably lighter/whiter than v2. Color now
+   lives in the sidebar and in Card accent bars, not in a colorful wash
+   behind everything. Use on portal main-content areas. */
+.page-wash {
+    background-color: var(--surface-soft);
+    background-image:
+            radial-gradient(900px 420px at 10% -10%, rgba(217, 138, 43, 0.05) 0%, transparent 60%),
+            radial-gradient(700px 380px at 100% 0%, rgba(46, 158, 82, 0.04) 0%, transparent 60%);
+    background-attachment: fixed;
+}
+
+/* Public marketing pages can still run warmer/more colorful than the app
+   shell — this is intentionally more saturated than .page-wash. */
+.marketing-wash {
+    background-color: var(--surface);
+    background-image:
+            radial-gradient(1000px 480px at 8% -8%, rgba(217, 138, 43, 0.10) 0%, transparent 58%),
+            radial-gradient(800px 420px at 100% 10%, rgba(46, 158, 82, 0.08) 0%, transparent 55%);
+}
+
+/* ==========================================================================
+   Floating-label inputs — FIXED: the label used to sit at the same left
+   offset as a leading icon and visually collide with it. Now a field
+   with a leading icon gets its own resting position (indented past the
+   icon) and snaps back to the standard position once floated up, same
+   as a field with no icon.
+   ========================================================================== */
+.input-floating-wrap { position: relative; }
+
+.input-floating {
+    width: 100%;
+    padding: 20px 14px 8px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.3;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    outline: none;
+}
+.input-floating.pl-10 { padding-left: 2.5rem; }
+.input-floating:hover:not(:focus):not(.error) { border-color: var(--line-strong); }
+.input-floating:focus { border-color: var(--accent-2); box-shadow: 0 0 0 3px var(--accent-2-soft); }
+.input-floating.error { border-color: var(--danger); }
+.input-floating.error:focus { box-shadow: 0 0 0 3px var(--danger-bg); }
+
+.input-floating-label {
+    position: absolute;
+    left: 14px;
+    top: 16px;
+    font-size: 15px;
+    color: var(--muted);
+    pointer-events: none;
+    transform-origin: left top;
+    transition: top 0.15s ease, left 0.15s ease, font-size 0.15s ease, color 0.15s ease, font-weight 0.15s ease;
+}
+
+/* Resting position when the field has a leading icon — indented so the
+   placeholder-label doesn't sit on top of the icon glyph. */
+.input-floating-label--with-icon { left: 40px; }
+
+/* Floated (filled/focused) state — always snaps back to the standard
+   14px position, regardless of whether there's an icon, since the icon
+   and the now-small label no longer compete for the same vertical band. */
+.input-floating:focus + .input-floating-label,
+.input-floating:not(:placeholder-shown) + .input-floating-label {
+    top: 7px;
+    left: 14px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent-2-hover);
+}
+.input-floating.error:focus + .input-floating-label,
+.input-floating.error:not(:placeholder-shown) + .input-floating-label {
+    color: var(--danger);
+}
+select.input-floating + .input-floating-label {
+    top: 7px; left: 14px; font-size: 11px; font-weight: 700; color: var(--muted);
+}
+
+/* ==========================================================================
+   FIXED: floating-label text overflow. Long labels like "Daily
+   breakfast allowance (₦, optional)" had no width constraint, so when
+   they wrapped to two lines inside a half-width grid column, the text
+   ran right up against — and visually collided with — the input's
+   rounded border, exactly as in the screenshot. Two changes:
+   1. The label now has an explicit max-width (calc(100% - 28px), so it
+      never touches the right edge) and a controlled line-height, so a
+      wrapped label reads as two clean lines instead of overlapping the
+      border.
+   2. The input itself gets more top padding (24px instead of 20px) so
+      a two-line label has room to sit above the input text without the
+      two overlapping vertically.
+   ========================================================================== */
+
+.input-floating {
+    padding: 24px 14px 8px 14px; /* was 20px 14px 8px 14px */
+}
+
+.input-floating-label {
+    max-width: calc(100% - 28px);
+    line-height: 1.25;
+    white-space: normal;
+}
+
+/* Floated (small, top) state stays single-line at that size — plenty
+   of room once it's shrunk to 11px, no wrap needed there. */
+.input-floating:focus + .input-floating-label,
+.input-floating:not(:placeholder-shown) + .input-floating-label {
+    white-space: nowrap;
+    max-width: calc(100% - 20px);
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Truck, Package, AlertCircle, CalendarDays, BarChart2 } from "lucide-react";
+import React, { useState } from "react";
+import { Truck, Package, AlertCircle, CalendarDays, BarChart2, UtensilsCrossed } from "lucide-react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/layout/AuthGuard";
 import { Sidebar, type NavGroup } from "@/components/layout/Sidebar";
@@ -16,29 +16,29 @@ const navGroups: NavGroup[] = [
             { label: "Packing Lists", href: "/ops/packing", icon: Package },
             { label: "Issues", href: "/ops/issues", icon: AlertCircle },
             { label: "Menus", href: "/ops/menus", icon: CalendarDays },
+            // NEW: meal library — add/edit/photograph meals directly
+            { label: "Meal Library", href: "/ops/meals", icon: UtensilsCrossed },
             { label: "Analytics", href: "/ops/analytics", icon: BarChart2 },
         ],
     },
 ];
 
 function OpsShell({ children }: { children: React.ReactNode }) {
+    const [collapsed, setCollapsed] = useState(false);
     const today = formatDate(new Date());
 
     return (
         <AuthGuard portal="ops">
-            <div className="flex h-screen bg-[var(--surface-soft)] overflow-hidden">
+            <div className="flex h-screen overflow-hidden">
                 <Sidebar
                     groups={navGroups}
-                    logo={<MannaLogo size="sm" />}
+                    collapsed={collapsed}
+                    onToggleCollapse={() => setCollapsed((c) => !c)}
+                    logo={collapsed ? <MannaLogo size="sm" variant="inverted" iconOnly /> : <MannaLogo size="sm" variant="inverted" />}
                 />
                 <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                    <TopBar
-                        title="Ops Centre"
-                        subtitle={today}
-                    />
-                    <main className="flex-1 overflow-y-auto p-5">
-                        {children}
-                    </main>
+                    <TopBar title="Ops Centre" subtitle={today} />
+                    <main className="page-wash flex-1 overflow-y-auto p-5">{children}</main>
                 </div>
             </div>
         </AuthGuard>

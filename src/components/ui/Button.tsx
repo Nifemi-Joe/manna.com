@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
-export type ButtonVariant = "filled" | "outline" | "ghost" | "danger";
+export type ButtonVariant = "filled" | "outline" | "ghost" | "danger" | "amber" | "coral";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps
@@ -45,6 +45,22 @@ const variantStyles: Record<ButtonVariant, string> = {
         "active:bg-[#7a1a1a]",
         "disabled:bg-[var(--line)] disabled:text-[var(--muted)]",
         "focus-visible:ring-2 focus-visible:ring-[var(--danger)] focus-visible:ring-offset-2",
+    ].join(" "),
+    /* NEW — amber: secondary/promotional actions (top-ups, "view menu", pilot CTAs) */
+    amber: [
+        "bg-[var(--accent-2)] text-white",
+        "hover:bg-[var(--accent-2-hover)]",
+        "active:bg-[var(--accent-2-hover)]",
+        "disabled:bg-[var(--line)] disabled:text-[var(--muted)]",
+        "focus-visible:ring-2 focus-visible:ring-[var(--accent-2)] focus-visible:ring-offset-2",
+    ].join(" "),
+    /* NEW — coral: urgent/time-sensitive actions ("Pay now", "Order before cutoff") */
+    coral: [
+        "bg-[var(--accent-3)] text-white",
+        "hover:bg-[var(--accent-3-hover)]",
+        "active:bg-[var(--accent-3-hover)]",
+        "disabled:bg-[var(--line)] disabled:text-[var(--muted)]",
+        "focus-visible:ring-2 focus-visible:ring-[var(--accent-3)] focus-visible:ring-offset-2",
     ].join(" "),
 };
 

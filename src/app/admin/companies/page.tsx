@@ -2,166 +2,151 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, CheckCircle, XCircle, AlertCircle, Building2, Package, Truck } from 'lucide-react';
-import { api, HealthResponse, ServiceStatus as ApiServiceStatus } from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { SkeletonCard, SkeletonKPI } from '@/components/ui/Skeleton';
+import { Building2, Search, ShoppingBag, Users2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { formatNaira, formatDate } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { SkeletonTable } from '@/components/ui/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
 
-interface ServiceStatus {
+interface Company {
+    id: string;
     name: string;
-    status: 'healthy' | 'degraded' | 'down';
+    slug: string;
+    plan: string;
+    status: 'active' | 'suspended' | 'churned';
+    address: string;
+    city: string;
+    employeeCount: number;
+    orderCount: number;
+    lifetimeSpend: number;
+    createdAt: string;
 }
 
-export default function AdminDashboard() {
-    const [health, setHealth] = useState<HealthResponse | null>(null);
-    const [healthLoading, setHealthLoading] = useState(true);
-    const [stats] = useState({ orders: 242, companies: 3, deliveries: 38 });
+const PLAN_TINT: Record<string, string> = {
+    pilot: 'var(--accent-2)',
+    starter: 'var(--brand-green)',
+    growth: 'var(--accent-3)',
+    enterprise: 'var(--brand-green-dark)',
+};
+
+export default function AdminCompaniesPage() {
+    const [companies, setCompanies] = useState<Company[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
 
     useEffect(() => {
-        async function loadHealth() {
+        async function load() {
             try {
-                const h = await api.admin.health();
-                setHealth(h);
+                const res = await fetch('/api/v1/admin/companies', { credentials: 'include' });
+                const data = await res.json();
+                setCompanies(data.companies ?? []);
             } catch {
-                setHealth({ status: 'ok' as ApiServiceStatus, services: { db: 'ok' as ApiServiceStatus, auth: 'ok' as ApiServiceStatus, payments: 'ok' as ApiServiceStatus, delivery: 'ok' as ApiServiceStatus }, version: '1.0', timestamp: new Date().toISOString() });
+                toast.error('Could not load companies');
             } finally {
-                setHealthLoading(false);
+                setLoading(false);
             }
         }
-        loadHealth();
-        const interval = setInterval(loadHealth, 30000);
-        return () => clearInterval(interval);
+        load();
     }, []);
 
-    const services: ServiceStatus[] = health?.services
-        ? Object.entries(health.services).map(([name, status]) => ({
-            name: name.charAt(0).toUpperCase() + name.slice(1),
-            status: (status === 'ok' ? 'healthy' : status) as ServiceStatus['status'],
-        }))
-        : [
-            { name: 'Database', status: 'healthy' },
-            { name: 'Auth', status: 'healthy' },
-            { name: 'Payments', status: 'healthy' },
-            { name: 'Delivery', status: 'healthy' },
-        ];
+    const filtered = companies.filter(
+        (c) => c.name.toLowerCase().includes(search.toLowerCase()) || c.city.toLowerCase().includes(search.toLowerCase())
+    );
 
-    function StatusIcon({ status }: { status: ServiceStatus['status'] }) {
-        if (status === 'healthy') return <CheckCircle size={16} className="text-[var(--success)]" />;
-        if (status === 'degraded') return <AlertCircle size={16} className="text-[var(--warning)]" />;
-        return <XCircle size={16} className="text-[var(--danger)]" />;
-    }
+    const totals = companies.reduce(
+        (acc, c) => ({ orders: acc.orders + c.orderCount, spend: acc.spend + c.lifetimeSpend, employees: acc.employees + c.employeeCount }),
+        { orders: 0, spend: 0, employees: 0 }
+    );
 
-    const overallHealthy = services.every((s) => s.status === 'healthy');
-    const hasDegraded = services.some((s) => s.status === 'degraded');
+    if (loading) return <div className="p-6"><SkeletonTable rows={5} /></div>;
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-            className="p-6 space-y-6"
-        >
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="p-6 space-y-5 max-w-6xl">
             <div>
-                <h1 className="text-heading-s text-[var(--text)]">Admin Dashboard</h1>
-                <p className="text-body-s text-[var(--muted)] mt-1">System overview and governance</p>
+                <h1 className="text-heading-m text-[var(--text)]">Companies</h1>
+                <p className="text-body-s text-[var(--muted)] mt-1"><span className="font-mono-num">{companies.length}</span> companies on the platform</p>
             </div>
 
-            {/* Today at a glance */}
             <div className="grid grid-cols-3 gap-4">
                 {[
-                    { label: 'Total Orders Today', value: stats.orders, icon: Package, color: 'text-[var(--accent)]' },
-                    { label: 'Active Companies', value: stats.companies, icon: Building2, color: 'text-[var(--accent-2)]' },
-                    { label: 'Deliveries Pending', value: stats.deliveries, icon: Truck, color: 'text-[var(--warning)]' },
-                ].map(({ label, value, icon: Icon, color }) => (
-                    <Card key={label}>
-                        <CardContent className="p-5">
-                            <div className="flex items-center justify-between mb-2">
-                                <p className="text-label-xs text-[var(--muted)]">{label.toUpperCase()}</p>
-                                <Icon size={18} className={color} />
-                            </div>
-                            <p className="text-display-l font-bold text-[var(--text)]">{value}</p>
+                    { label: 'Total orders (all-time)', value: totals.orders, tint: 'var(--brand-green)' },
+                    { label: 'Lifetime spend', value: formatNaira(totals.spend), tint: 'var(--accent-2-hover)' },
+                    { label: 'Total employees', value: totals.employees, tint: 'var(--accent-3)' },
+                ].map(({ label, value, tint }) => (
+                    <Card key={label} accent={tint} padding="none">
+                        <CardContent className="p-4">
+                            <p className="text-label-xs text-[var(--muted)] mb-1">{label}</p>
+                            <p className="font-mono-num text-[24px]" style={{ color: tint }}>{value}</p>
                         </CardContent>
                     </Card>
                 ))}
             </div>
 
-            {/* System health */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Activity size={16} className="text-[var(--accent)]" />
-                        System Health
-                        <span className={`ml-auto text-label-xs font-semibold px-2 py-0.5 rounded-full ${
-                            overallHealthy
-                                ? 'bg-green-50 text-[var(--success)]'
-                                : hasDegraded
-                                    ? 'bg-yellow-50 text-[var(--warning)]'
-                                    : 'bg-red-50 text-[var(--danger)]'
-                        }`}>
-              {overallHealthy ? 'All Systems Operational' : hasDegraded ? 'Degraded' : 'Outage Detected'}
-            </span>
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {healthLoading ? (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="h-16 bg-[var(--surface-soft)] rounded-xl animate-pulse" />
-                            ))}
-                        </div>
+            <div className="relative max-w-xs">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
+                <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search companies…"
+                    className="w-full h-10 pl-8 pr-3 rounded-[var(--radius-md)] border border-[var(--line)] bg-[var(--surface)] text-body-s focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-2)]"
+                />
+            </div>
+
+            <Card accent="var(--brand-green)" padding="none">
+                <CardContent className="p-0">
+                    {filtered.length === 0 ? (
+                        <EmptyState variant="empty" title="No companies found" description="Approve a pilot lead to onboard your first company." />
                     ) : (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            {services.map((service) => (
-                                <div
-                                    key={service.name}
-                                    className={`p-4 rounded-xl border ${
-                                        service.status === 'healthy'
-                                            ? 'border-[var(--line)] bg-[var(--surface-soft)]'
-                                            : service.status === 'degraded'
-                                                ? 'border-yellow-200 bg-yellow-50'
-                                                : 'border-red-200 bg-red-50'
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-between mb-1">
-                                        <p className="text-body-s font-medium text-[var(--text)]">{service.name}</p>
-                                        <StatusIcon status={service.status} />
-                                    </div>
-                                    <p className={`text-label-xs font-semibold capitalize ${
-                                        service.status === 'healthy' ? 'text-[var(--success)]' :
-                                            service.status === 'degraded' ? 'text-[var(--warning)]' : 'text-[var(--danger)]'
-                                    }`}>
-                                        {service.status}
-                                    </p>
-                                </div>
-                            ))}
+                        <div className="overflow-x-auto thin-scroll">
+                            <table className="w-full text-body-s">
+                                <thead className="border-b border-[var(--line)]">
+                                <tr>
+                                    {['Company', 'Plan', 'Status', 'Employees', 'Orders', 'Lifetime spend', 'Since'].map((h) => (
+                                        <th key={h} className="p-3 text-left text-label-xs text-[var(--muted)]">{h}</th>
+                                    ))}
+                                </tr>
+                                </thead>
+                                <tbody className="divide-y divide-[var(--line)]">
+                                {filtered.map((c) => (
+                                    <tr key={c.id} className="hover:bg-[var(--surface-soft)] transition-colors">
+                                        <td className="p-3">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="w-8 h-8 rounded-[var(--radius-md)] bg-[var(--brand-green-tint)] text-[var(--brand-green)] flex items-center justify-center shrink-0">
+                                                    <Building2 size={14} />
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-[var(--text)]">{c.name}</p>
+                                                    <p className="text-[var(--muted)]">{c.city}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="p-3">
+                                                <span
+                                                    className="text-label-xs px-2 py-0.5 rounded-full capitalize"
+                                                    style={{ background: `color-mix(in srgb, ${PLAN_TINT[c.plan] ?? 'var(--muted)'} 14%, transparent)`, color: PLAN_TINT[c.plan] ?? 'var(--muted)' }}
+                                                >
+                                                    {c.plan}
+                                                </span>
+                                        </td>
+                                        <td className="p-3">
+                                            <Badge variant={c.status === 'active' ? 'success' : c.status === 'suspended' ? 'warning' : 'neutral'} dot>{c.status}</Badge>
+                                        </td>
+                                        <td className="p-3 text-[var(--text)]">
+                                            <span className="flex items-center gap-1.5 font-mono-num"><Users2 size={13} className="text-[var(--muted)]" />{c.employeeCount}</span>
+                                        </td>
+                                        <td className="p-3 text-[var(--text)]">
+                                            <span className="flex items-center gap-1.5 font-mono-num"><ShoppingBag size={13} className="text-[var(--muted)]" />{c.orderCount}</span>
+                                        </td>
+                                        <td className="p-3 text-[var(--text)] font-mono-num">{formatNaira(c.lifetimeSpend)}</td>
+                                        <td className="p-3 text-[var(--muted)]">{formatDate(c.createdAt)}</td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
-                    <p className="text-label-xs text-[var(--muted)] mt-3">
-                        Auto-refreshes every 30s · Last checked: {health?.timestamp ? new Date(health.timestamp).toLocaleTimeString() : '—'}
-                    </p>
-                </CardContent>
-            </Card>
-
-            {/* Quick links */}
-            <Card>
-                <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {[
-                            { label: 'Manage Companies', href: '/admin/companies' },
-                            { label: 'All Users', href: '/admin/users' },
-                            { label: 'RBAC Roles', href: '/admin/roles' },
-                            { label: 'Dispatch View', href: '/ops/dispatch' },
-                        ].map(({ label, href }) => (
-                            <a
-                                key={label}
-                                href={href}
-                                className="p-4 rounded-xl border border-[var(--line)] hover:border-[var(--accent)] hover:bg-blue-50/50 transition-colors text-center text-body-s font-medium text-[var(--text)]"
-                            >
-                                {label}
-                            </a>
-                        ))}
-                    </div>
                 </CardContent>
             </Card>
         </motion.div>

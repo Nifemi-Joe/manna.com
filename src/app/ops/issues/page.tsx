@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, AlertTriangle } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -55,10 +55,11 @@ const STATUS_COLORS: Record<IssueStatus, 'success' | 'warning' | 'danger'> = {
     open: 'danger',
 };
 
+// Warmer, more legible severity chips than the original gray-blue-red scale
 const SEVERITY_COLORS: Record<IssueSeverity, string> = {
-    low: 'bg-blue-50 text-blue-700',
-    medium: 'bg-yellow-50 text-yellow-700',
-    high: 'bg-red-50 text-red-700',
+    low: 'bg-[var(--brand-green-tint)] text-[var(--brand-green)]',
+    medium: 'bg-[var(--accent-2-soft)] text-[var(--accent-2-hover)]',
+    high: 'bg-[var(--accent-3-soft)] text-[var(--accent-3)]',
 };
 
 export default function IssuesPage() {
@@ -107,27 +108,27 @@ export default function IssuesPage() {
         >
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-heading-s text-[var(--text)]">Issues</h1>
+                    <h1 className="text-heading-m text-[var(--text)]">Issues</h1>
                     <p className="text-body-s text-[var(--muted)] mt-1">
-                        {issues.filter((i) => i.status === 'open').length} open ·{' '}
-                        {issues.filter((i) => i.status === 'in-progress').length} in progress
+                        <span className="font-mono-num">{issues.filter((i) => i.status === 'open').length}</span> open ·{' '}
+                        <span className="font-mono-num">{issues.filter((i) => i.status === 'in-progress').length}</span> in progress
                     </p>
                 </div>
-                <Button size="sm" onClick={() => setShowLog(true)}>
-                    <Plus size={14} className="mr-1.5" />Log Issue
+                <Button variant="coral" size="sm" onClick={() => setShowLog(true)}>
+                    <Plus size={14} className="mr-1.5" />Log issue
                 </Button>
             </div>
 
             {/* Status filters */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 bg-[var(--surface)] p-1 rounded-[var(--radius-md)] border border-[var(--line)] w-fit">
                 {(['all', 'open', 'in-progress', 'resolved'] as const).map((s) => (
                     <button
                         key={s}
                         onClick={() => setStatusFilter(s)}
-                        className={`px-3 py-1.5 rounded-lg text-body-s font-medium capitalize transition-colors ${
+                        className={`px-3 py-1.5 rounded-[calc(var(--radius-md)-4px)] text-body-s font-medium capitalize transition-colors ${
                             statusFilter === s
-                                ? 'bg-[var(--accent)] text-white'
-                                : 'bg-[var(--surface-soft)] text-[var(--muted)] hover:bg-[var(--line)]'
+                                ? 'bg-[var(--brand-green)] text-white'
+                                : 'text-[var(--muted)] hover:text-[var(--text)]'
                         }`}
                     >
                         {s}
@@ -135,7 +136,7 @@ export default function IssuesPage() {
                 ))}
             </div>
 
-            <Card>
+            <Card accent="var(--accent-3)" padding="none">
                 <CardContent className="p-0">
                     {filtered.length === 0 ? (
                         <EmptyState
@@ -144,12 +145,12 @@ export default function IssuesPage() {
                             description="No issues match the current filter."
                         />
                     ) : (
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto thin-scroll">
                             <table className="w-full text-body-s">
                                 <thead className="border-b border-[var(--line)]">
                                 <tr>
                                     {['Date', 'Company', 'Employee', 'Type', 'Severity', 'Status', 'Credit', 'Actions'].map((h) => (
-                                        <th key={h} className="p-3 text-left text-label-xs text-[var(--muted)] font-semibold whitespace-nowrap">{h}</th>
+                                        <th key={h} className="p-3 text-left text-label-xs text-[var(--muted)] whitespace-nowrap">{h}</th>
                                     ))}
                                 </tr>
                                 </thead>
@@ -163,9 +164,9 @@ export default function IssuesPage() {
                                             <span className="capitalize text-[var(--muted)]">{issue.type}</span>
                                         </td>
                                         <td className="p-3">
-                        <span className={`px-2 py-0.5 rounded text-label-xs font-medium capitalize ${SEVERITY_COLORS[issue.severity]}`}>
-                          {issue.severity}
-                        </span>
+                                            <span className={`px-2 py-0.5 rounded text-label-xs font-medium capitalize ${SEVERITY_COLORS[issue.severity]}`}>
+                                                {issue.severity}
+                                            </span>
                                         </td>
                                         <td className="p-3">
                                             <Badge variant={STATUS_COLORS[issue.status]} dot>
@@ -190,7 +191,7 @@ export default function IssuesPage() {
             </Card>
 
             {/* Log issue modal */}
-            <Modal isOpen={showLog} onClose={() => setShowLog(false)} title="Log Issue">
+            <Modal isOpen={showLog} onClose={() => setShowLog(false)} title="Log issue">
                 <form onSubmit={handleSubmit(onLogIssue)} className="space-y-4" noValidate>
                     <div className="grid grid-cols-2 gap-3">
                         <Input label="Company" {...register('company')} error={errors.company?.message} />
@@ -201,7 +202,7 @@ export default function IssuesPage() {
                             <label className="text-body-s text-[var(--muted)] mb-1 block">Issue type</label>
                             <select
                                 {...register('type')}
-                                className="w-full px-3 py-2.5 rounded-lg border border-[var(--line)] bg-[var(--surface)] text-body-s focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                                className="w-full px-3 py-2.5 rounded-[var(--radius-md)] border border-[var(--line)] bg-[var(--surface)] text-body-s focus:outline-none focus:ring-2 focus:ring-[var(--accent-2)]"
                             >
                                 <option value="late">Late delivery</option>
                                 <option value="missing">Missing item</option>
@@ -214,7 +215,7 @@ export default function IssuesPage() {
                             <label className="text-body-s text-[var(--muted)] mb-1 block">Severity</label>
                             <select
                                 {...register('severity')}
-                                className="w-full px-3 py-2.5 rounded-lg border border-[var(--line)] bg-[var(--surface)] text-body-s focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                                className="w-full px-3 py-2.5 rounded-[var(--radius-md)] border border-[var(--line)] bg-[var(--surface)] text-body-s focus:outline-none focus:ring-2 focus:ring-[var(--accent-2)]"
                             >
                                 <option value="low">Low</option>
                                 <option value="medium">Medium</option>
@@ -227,18 +228,18 @@ export default function IssuesPage() {
                         <textarea
                             {...register('description')}
                             rows={3}
-                            className="w-full px-3 py-2.5 rounded-lg border border-[var(--line)] bg-[var(--surface)] text-body-s focus:outline-none focus:ring-2 focus:ring-[var(--accent)] resize-none"
+                            className="w-full px-3 py-2.5 rounded-[var(--radius-md)] border border-[var(--line)] bg-[var(--surface)] text-body-s focus:outline-none focus:ring-2 focus:ring-[var(--accent-2)] resize-none"
                         />
                         {errors.description && (
                             <p className="text-body-s text-[var(--danger)] mt-1">{errors.description.message}</p>
                         )}
                     </div>
                     <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" {...register('creditApplied')} className="rounded border-[var(--line)]" />
+                        <input type="checkbox" {...register('creditApplied')} className="rounded border-[var(--line)] accent-[var(--brand-green)]" />
                         <span className="text-body-s text-[var(--text)]">Apply credit to employee's account</span>
                     </label>
                     <div className="flex gap-3 pt-2">
-                        <Button type="submit" loading={isSubmitting}>Log Issue</Button>
+                        <Button type="submit" variant="coral" loading={isSubmitting}>Log issue</Button>
                         <Button type="button" variant="outline" onClick={() => setShowLog(false)}>Cancel</Button>
                     </div>
                 </form>

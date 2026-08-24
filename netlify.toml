@@ -1,6 +1,20 @@
+# netlify.toml — place this in the ROOT of your manna.com (frontend) repo.
+
 [build]
   command = "npm run build"
   publish = ".next"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# You do NOT need to change your API calls to point at Render directly.
+# Your lib/api.ts already calls relative paths like "/api/v1/orders",
+# and next.config.ts's rewrites() proxies those server-side to whatever
+# API_URL points at. This is the right call for deployment, not just
+# dev convenience — it means the session cookie gets set on YOUR
+# Netlify domain (first-party), never on Render's domain directly. If
+# you called Render's domain straight from the browser instead, the
+# cookie would be third-party, and browsers increasingly block or
+# restrict that outright (Safari does today; Chrome is moving there).
+# Keep the proxy pattern. Just make sure API_URL below points at your
+# real Render URL once it exists.
