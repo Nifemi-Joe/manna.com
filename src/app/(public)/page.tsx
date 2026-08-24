@@ -52,13 +52,18 @@ const fadeUp: Variants = {
     }),
 };
 
+// FIXED: these were pointing at /images/<short-name>.jpg, which doesn't
+// exist in the repo — the actual assets live under /images/menu/ with
+// longer, more specific filenames (confirmed against the project's
+// public/images/menu directory). That mismatch is why every photo was
+// broken on Netlify while stray local files masked the bug in dev.
 const FAN_FAVORITES = [
-    { src: "/images/jollof-chicken-plantain.jpg", name: "Jollof Rice, Chicken & Plantain", tag: "Most ordered" },
-    { src: "/images/buka-stew.jpg", name: "Buka Stew & Rice", tag: "Classic" },
-    { src: "/images/spaghetti-chicken.jpg", name: "Spaghetti & Chicken", tag: "Fan favorite" },
-    { src: "/images/chicken-sandwich.jpg", name: "Chicken Sandwich", tag: "Light lunch" },
-    { src: "/images/meat-pie.jpg", name: "Meat Pie", tag: "Snack" },
-    { src: "/images/zobo-juice.jpg", name: "Zobo Juice", tag: "Drink" },
+    { src: "/images/menu/jollof-fried-rice-chicken-plantain.jpg", name: "Jollof Rice, Chicken & Plantain", tag: "Most ordered" },
+    { src: "/images/menu/white-rice-buka-stew-plantain.jpg", name: "Buka Stew & Rice", tag: "Classic" },
+    { src: "/images/menu/spaghetti-chicken.jpg", name: "Spaghetti & Chicken", tag: "Fan favorite" },
+    { src: "/images/menu/chicken-sandwich.jpg", name: "Chicken Sandwich", tag: "Light lunch" },
+    { src: "/images/menu/meat-pie.jpg", name: "Meat Pie", tag: "Snack" },
+    { src: "/images/menu/juiceup-zobo.jpg", name: "Zobo Juice", tag: "Drink" },
 ];
 
 export default function HomePage() {
@@ -165,7 +170,7 @@ export default function HomePage() {
                     >
                         <div className="relative aspect-square rounded-[var(--radius-xl)] overflow-hidden shadow-[var(--shadow-lg)]">
                             <Image
-                                src="/images/jollof-chicken-plantain.jpg"
+                                src="/images/menu/jollof-fried-rice-chicken-plantain.jpg"
                                 alt="Jollof rice, chicken and plantain — a Manna favorite"
                                 fill
                                 sizes="(max-width: 768px) 100vw, 480px"
