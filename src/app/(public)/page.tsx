@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
@@ -19,13 +19,12 @@ import {
     CheckCircle,
     ArrowRight,
     Star,
+    Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/Input";
 import { toast } from "sonner";
 
-// UPDATED: phone is now required — "so we can call them" was the whole
-// point of adding it. Nothing else in this schema changed.
 const pilotSchema = z.object({
     companyName: z.string().min(2, "Company name required"),
     contactName: z.string().min(2, "Your name required"),
@@ -52,19 +51,22 @@ const fadeUp: Variants = {
     }),
 };
 
-// FIXED: these were pointing at /images/<short-name>.jpg, which doesn't
-// exist in the repo — the actual assets live under /images/menu/ with
-// longer, more specific filenames (confirmed against the project's
-// public/images/menu directory). That mismatch is why every photo was
-// broken on Netlify while stray local files masked the bug in dev.
-const FAN_FAVORITES = [
-    { src: "/images/menu/jollof-fried-rice-chicken-plantain.jpg", name: "Jollof Rice, Chicken & Plantain", tag: "Most ordered" },
-    { src: "/images/menu/white-rice-buka-stew-plantain.jpg", name: "Buka Stew & Rice", tag: "Classic" },
-    { src: "/images/menu/spaghetti-chicken.jpg", name: "Spaghetti & Chicken", tag: "Fan favorite" },
-    { src: "/images/menu/chicken-sandwich.jpg", name: "Chicken Sandwich", tag: "Light lunch" },
-    { src: "/images/menu/meat-pie.jpg", name: "Meat Pie", tag: "Snack" },
-    { src: "/images/menu/juiceup-zobo.jpg", name: "Zobo Juice", tag: "Drink" },
-];
+interface Highlight {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    imageUrl?: string;
+}
+
+interface TodayMeal {
+    id: string;
+    name: string;
+    price: number;
+    imageUrl?: string;
+}
+
+const FALLBACK_IMAGE = "/images/menu/jollof-fried-rice-chicken-plantain.jpg";
 
 export default function HomePage() {
     const {
@@ -76,11 +78,34 @@ export default function HomePage() {
 
     const [submitted, setSubmitted] = useState(false);
 
-    // UPDATED: phone now included in the payload sent to POST /api/v1/leads.
-    // The backend needs its own small update to accept and store it — see
-    // schema_v7_lead_phone.sql for the column, and add `phone:
-    // z.string().optional()` (or required, matching this form) to that
-    // route's validation schema plus the INSERT statement.
+    // REVAMPED: both the "Today's menu" strip and "Fan favorites" grid
+    // below now pull from the real database (GET /public/menu/week and
+    // GET /public/menu/highlights) instead of a hardcoded array —
+    // whatever Ops actually has published shows up here automatically,
+    // no code change needed when the menu changes.
+    const [highlights, setHighlights] = useState<Highlight[]>([]);
+    const [highlightsLoading, setHighlightsLoading] = useState(true);
+    const [todayMeals, setTodayMeals] = useState<TodayMeal[]>([]);
+    const [todayLoading, setTodayLoading] = useState(true);
+
+    useEffect(() => {
+        fetch("/api/v1/public/menu/highlights?limit=6")
+            .then((r) => r.json())
+            .then((data) => setHighlights(data.meals ?? []))
+            .catch(() => setHighlights([]))
+            .finally(() => setHighlightsLoading(false));
+
+        fetch("/api/v1/public/menu/week")
+            .then((r) => r.json())
+            .then((data) => {
+                const todayName = new Date().toLocaleDateString("en-US", { weekday: "long" });
+                const today = (data.days ?? []).find((d: any) => d.dayName === todayName) ?? data.days?.[0];
+                setTodayMeals((today?.lunch ?? []).slice(0, 4));
+            })
+            .catch(() => setTodayMeals([]))
+            .finally(() => setTodayLoading(false));
+    }, []);
+
     const onSubmit = async (data: PilotFormData) => {
         try {
             const res = await fetch("/api/v1/leads", {
@@ -170,8 +195,8 @@ export default function HomePage() {
                     >
                         <div className="relative aspect-square rounded-[var(--radius-xl)] overflow-hidden shadow-[var(--shadow-lg)]">
                             <Image
-                                src="/images/menu/jollof-fried-rice-chicken-plantain.jpg"
-                                alt="Jollof rice, chicken and plantain — a Manna favorite"
+                                src={highlights[0]?.imageUrl ?? FALLBACK_IMAGE}
+                                alt="A Manna favorite"
                                 fill
                                 sizes="(max-width: 768px) 100vw, 480px"
                                 className="object-cover"
@@ -204,6 +229,44 @@ export default function HomePage() {
                     </motion.div>
                 </div>
             </section>
+
+            {/* ─── NEW: live "Today's menu" strip — real backend data,
+                 the whole point of this revamp: proves the site is
+                 actually connected to what Ops is serving right now. ── */}
+            {(todayLoading || todayMeals.length > 0) && (
+                <section className="border-y border-[var(--line)] bg-[var(--surface)]">
+                    <div className="max-w-6xl mx-auto px-6 py-6">
+                        <div className="flex items-center gap-2 mb-4">
+                            <span className="w-2 h-2 rounded-full bg-[var(--brand-green)] animate-pulse" aria-hidden="true" />
+                            <p className="text-label-xs text-[var(--brand-green)] font-semibold">On the menu today</p>
+                        </div>
+                        {todayLoading ? (
+                            <div className="flex items-center gap-2 text-[var(--muted)] py-4">
+                                <Loader2 size={16} className="animate-spin" />
+                                <span className="text-body-s">Loading today's menu…</span>
+                            </div>
+                        ) : (
+                            <div className="flex gap-4 overflow-x-auto thin-scroll pb-1">
+                                {todayMeals.map((meal) => (
+                                    <div key={meal.id} className="flex items-center gap-3 shrink-0 pr-4 border-r border-[var(--line)] last:border-0">
+                                        <div className="relative w-12 h-12 rounded-[var(--radius-md)] overflow-hidden shrink-0 bg-[var(--surface-soft)]">
+                                            {meal.imageUrl ? (
+                                                <Image src={meal.imageUrl} alt={meal.name} fill className="object-cover" />
+                                            ) : (
+                                                <div className="absolute inset-0 flex items-center justify-center text-lg">🍽️</div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <p className="text-body-s font-medium text-[var(--text)] whitespace-nowrap">{meal.name}</p>
+                                            <p className="text-label-xs text-[var(--muted)] font-mono-num">₦{meal.price.toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </section>
+            )}
 
             {/* ─── How it works ────────────────────────────────────── */}
             <section className="max-w-6xl mx-auto px-6 py-24">
@@ -238,7 +301,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* ─── Fan favorites ────────────────────────────────────── */}
+            {/* ─── Fan favorites — REVAMPED: real database data ─────── */}
             <section className="bg-[var(--surface-soft)] border-y border-[var(--line)]">
                 <div className="max-w-6xl mx-auto px-6 py-24">
                     <div className="max-w-xl mb-12">
@@ -248,35 +311,50 @@ export default function HomePage() {
                             Every dish on Manna is made fresh — no stock photography, this is what actually arrives at your desk.
                         </p>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {FAN_FAVORITES.map((meal, i) => (
-                            <motion.div
-                                key={meal.name}
-                                initial={{ opacity: 0, y: 12 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, margin: "-60px" }}
-                                whileHover={{ y: -4 }}
-                                transition={{ duration: 0.4, delay: (i % 3) * 0.07 }}
-                                className="group relative rounded-[var(--radius-lg)] overflow-hidden border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-shadow"
-                            >
-                                <div className="relative aspect-square">
-                                    <Image
-                                        src={meal.src}
-                                        alt={meal.name}
-                                        fill
-                                        sizes="(max-width: 768px) 50vw, 300px"
-                                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                    <span className="absolute top-2 left-2 text-label-xs px-2 py-1 rounded-full bg-white/90 text-[var(--brand-green)] font-semibold">
-                                        {meal.tag}
-                                    </span>
-                                </div>
-                                <div className="p-3">
-                                    <p className="text-body-s font-semibold text-[var(--text)] leading-snug">{meal.name}</p>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+
+                    {highlightsLoading ? (
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {Array.from({ length: 6 }).map((_, i) => (
+                                <div key={i} className="aspect-square rounded-[var(--radius-lg)] bg-[var(--surface)] animate-pulse" />
+                            ))}
+                        </div>
+                    ) : highlights.length === 0 ? (
+                        <p className="text-body-s text-[var(--muted)] text-center py-12">No meals published yet — check back soon.</p>
+                    ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {highlights.map((meal, i) => (
+                                <motion.div
+                                    key={meal.id}
+                                    initial={{ opacity: 0, y: 12 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, margin: "-60px" }}
+                                    whileHover={{ y: -4 }}
+                                    transition={{ duration: 0.4, delay: (i % 3) * 0.07 }}
+                                    className="group relative rounded-[var(--radius-lg)] overflow-hidden border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-shadow"
+                                >
+                                    <div className="relative aspect-square bg-[var(--surface-soft)]">
+                                        {meal.imageUrl ? (
+                                            <Image
+                                                src={meal.imageUrl}
+                                                alt={meal.name}
+                                                fill
+                                                sizes="(max-width: 768px) 50vw, 300px"
+                                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                            />
+                                        ) : (
+                                            <div className="absolute inset-0 flex items-center justify-center text-4xl">🍽️</div>
+                                        )}
+                                        <span className="absolute top-2 left-2 text-label-xs px-2 py-1 rounded-full bg-white/90 text-[var(--brand-green)] font-semibold">
+                                            ₦{meal.price.toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div className="p-3">
+                                        <p className="text-body-s font-semibold text-[var(--text)] leading-snug">{meal.name}</p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -342,9 +420,6 @@ export default function HomePage() {
                                     <Input label="Company name" autoComplete="organization" error={errors.companyName?.message} {...register("companyName")} />
                                     <Input label="Your name" autoComplete="name" error={errors.contactName?.message} {...register("contactName")} />
                                 </div>
-                                {/* NEW: phone, alongside email — this is the field that
-                                    actually lets sales call the lead instead of only
-                                    being able to email them. */}
                                 <div className="grid sm:grid-cols-2 gap-4">
                                     <Input label="Work email" type="email" autoComplete="email" error={errors.email?.message} {...register("email")} />
                                     <Input label="Phone number" type="tel" autoComplete="tel" error={errors.phone?.message} {...register("phone")} />

@@ -5,17 +5,29 @@ import { motion } from 'framer-motion';
 import { Activity, CheckCircle, XCircle, AlertCircle, Building2, Package, Truck } from 'lucide-react';
 import { api, HealthResponse, ServiceStatus as ApiServiceStatus } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { SkeletonCard, SkeletonKPI } from '@/components/ui/Skeleton';
 
 interface ServiceStatus {
     name: string;
     status: 'healthy' | 'degraded' | 'down';
 }
 
+interface Stats {
+    ordersToday: number;
+    activeCompanies: number;
+    deliveriesPending: number;
+}
+
+/**
+ * FIXED: this dashboard previously showed
+ * useState({ orders: 242, companies: 3, deliveries: 38 }) — literal
+ * hardcoded numbers, never connected to anything. Now fetches real
+ * counts from GET /api/v1/admin/stats.
+ */
 export default function AdminDashboard() {
     const [health, setHealth] = useState<HealthResponse | null>(null);
     const [healthLoading, setHealthLoading] = useState(true);
-    const [stats] = useState({ orders: 242, companies: 3, deliveries: 38 });
+    const [stats, setStats] = useState<Stats | null>(null);
+    const [statsLoading, setStatsLoading] = useState(true);
 
     useEffect(() => {
         async function loadHealth() {
@@ -28,9 +40,22 @@ export default function AdminDashboard() {
                 setHealthLoading(false);
             }
         }
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/v1/admin/stats', { credentials: 'include' });
+                const data = await res.json();
+                setStats(data);
+            } catch {
+                setStats({ ordersToday: 0, activeCompanies: 0, deliveriesPending: 0 });
+            } finally {
+                setStatsLoading(false);
+            }
+        }
         loadHealth();
+        loadStats();
         const interval = setInterval(loadHealth, 30000);
-        return () => clearInterval(interval);
+        const statsInterval = setInterval(loadStats, 30000);
+        return () => { clearInterval(interval); clearInterval(statsInterval); };
     }, []);
 
     const services: ServiceStatus[] = health?.services
@@ -66,12 +91,11 @@ export default function AdminDashboard() {
                 <p className="text-body-s text-[var(--muted)] mt-1">System overview and governance</p>
             </div>
 
-            {/* Today at a glance */}
             <div className="grid grid-cols-3 gap-4">
                 {[
-                    { label: 'Total Orders Today', value: stats.orders, icon: Package, color: 'text-[var(--accent)]' },
-                    { label: 'Active Companies', value: stats.companies, icon: Building2, color: 'text-[var(--accent-2)]' },
-                    { label: 'Deliveries Pending', value: stats.deliveries, icon: Truck, color: 'text-[var(--warning)]' },
+                    { label: 'Total Orders Today', value: stats?.ordersToday, icon: Package, color: 'text-[var(--accent)]' },
+                    { label: 'Active Companies', value: stats?.activeCompanies, icon: Building2, color: 'text-[var(--accent-2)]' },
+                    { label: 'Deliveries Pending', value: stats?.deliveriesPending, icon: Truck, color: 'text-[var(--warning)]' },
                 ].map(({ label, value, icon: Icon, color }) => (
                     <Card key={label}>
                         <CardContent className="p-5">
@@ -79,13 +103,16 @@ export default function AdminDashboard() {
                                 <p className="text-label-xs text-[var(--muted)]">{label.toUpperCase()}</p>
                                 <Icon size={18} className={color} />
                             </div>
-                            <p className="text-display-l font-bold text-[var(--text)]">{value}</p>
+                            {statsLoading ? (
+                                <div className="h-9 w-16 bg-[var(--surface-soft)] rounded animate-pulse" />
+                            ) : (
+                                <p className="text-display-l font-bold text-[var(--text)] font-mono-num">{value}</p>
+                            )}
                         </CardContent>
                     </Card>
                 ))}
             </div>
 
-            {/* System health */}
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -142,7 +169,6 @@ export default function AdminDashboard() {
                 </CardContent>
             </Card>
 
-            {/* Quick links */}
             <Card>
                 <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
                 <CardContent>
@@ -151,7 +177,7 @@ export default function AdminDashboard() {
                             { label: 'Manage Companies', href: '/admin/companies' },
                             { label: 'All Users', href: '/admin/users' },
                             { label: 'RBAC Roles', href: '/admin/roles' },
-                            { label: 'Dispatch View', href: '/ops/dispatch' },
+                            { label: 'Dispatch View', href: '/admin/dispatch' },
                         ].map(({ label, href }) => (
                             <a
                                 key={label}
